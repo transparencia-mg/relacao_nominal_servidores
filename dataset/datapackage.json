@@ -4,7 +4,7 @@
   "profile": "data-package",
   "resources": [
     {
-      "description": "Insira a descrição/explicação detalhada deste recurso.",
+      "description": "Relação nominal dos servidores do Poder Executivo do Estado contendo os cargos e funções, datas de admissão, exoneração, inativação e carga horária semanal.",
       "dialect": {
         "delimiter": ";"
       },
@@ -18,93 +18,156 @@
         "fields": [
           {
             "name": "ano_mes",
-            "type": "integer"
+            "description": "Ano e mês a que se refere os dados",
+            "title": "Mês Ano",
+            "type": "integer",
+            "format": "default"
           },
           {
             "name": "masp",
-            "type": "integer"
+            "description": "Número de matrícula do servidor",
+            "title": "MASP",
+            "type": "integer",
+            "format": "default"
           },
           {
             "name": "adm",
-            "type": "integer"
+            "description": "Número de admissão do servidor",
+            "title": "Admissão",
+            "type": "integer",
+            "format": "default"
           },
           {
             "name": "nome",
-            "type": "string"
+            "description": "Nome completo do servidor",
+            "title": "Nome Completo do Servidor",
+            "type": "string",
+            "format": "default"
           },
           {
             "name": "siglaefetivo",
-            "type": "string"
+            "description": "Sigla do cargo efetivo",
+            "title": "Sigla do Cargo Efetivo",
+            "type": "string",
+            "format": "default"
           },
           {
             "name": "nmefetivo",
-            "type": "string"
+            "description": "Nome do cargo efetivo",
+            "title": "Nome do Cargo Efetivo",
+            "type": "string",
+            "format": "default"
           },
           {
             "name": "cdcomi",
-            "type": "any"
+            "description": "Código do Cargo em Comissão",
+            "title": "Código do Cargo em Comissão",
+            "type": "any",
+            "format": "default"
           },
           {
             "name": "desccomi",
-            "type": "any"
+            "description": "Descrição do cargo em comissão",
+            "title": "Descrição do cargo em comissão",
+            "type": "any",
+            "format": "default"
           },
           {
             "name": "cd_funcao_gratif_gte",
-            "type": "any"
+            "description": "Código da função gratificada",
+            "title": "Código da função gratificada",
+            "type": "any",
+            "format": "default"
           },
           {
             "name": "desc_funcao_gratif_gte",
-            "type": "any"
+            "description": "Descrição do função gratificada",
+            "title": "Descrição do função gratificada",
+            "type": "any",
+            "format": "default"
           },
           {
             "name": "carga_horaria",
-            "type": "integer"
+            "description": "Carga Horária",
+            "title": "Carga Horária",
+            "type": "integer",
+            "format": "default"
           },
           {
             "name": "cd_instituicao_dotacao",
-            "type": "integer"
+            "description": "Código da Instituição de Pagamento",
+            "title": "Código da Instituição de Pagamento",
+            "type": "integer",
+            "format": "default"
           },
           {
             "name": "sigla_instituicao_dotacao",
-            "type": "string"
+            "description": "Siga da Instituição de pagamento",
+            "title": "Siga da Instituição de pagamento",
+            "type": "string",
+            "format": "default"
           },
           {
             "name": "desc_instituicao_dotacao",
-            "type": "string"
+            "description": "Descrição da Instituição de pagamento",
+            "title": "Descrição da Instituição de pagamento",
+            "type": "string",
+            "format": "default"
           },
           {
             "name": "cd_instituicao_lotacao",
-            "type": "integer"
+            "description": "Código da instituição de lotação",
+            "title": "Código da instituição de lotação",
+            "type": "integer",
+            "format": "default"
           },
           {
             "name": "sigla_instituicao_lotacao",
-            "type": "string"
+            "description": "Siga da instituição de lotação",
+            "title": "Siga da instituição de lotação",
+            "type": "string",
+            "format": "default"
           },
           {
             "name": "desc_instituicao_lotacao",
-            "type": "string"
+            "description": "Descrição da Instituição de lotação",
+            "title": "Descrição da Instituição de lotação",
+            "type": "string",
+            "format": "default"
           },
           {
             "name": "descsitserv",
-            "type": "string"
+            "description": "Situação funcional do servidor",
+            "title": "Situação funcional do servidor",
+            "type": "string",
+            "format": "default"
           },
           {
             "name": "id_data_inicio",
-            "type": "integer"
+            "description": "Data de início no cargo",
+            "title": "Data de Início no Cargo",
+            "type": "integer",
+            "format": "default"
           },
           {
             "name": "id_data_aposentadoria",
-            "type": "string"
+            "description": "Data de Aposentadoria",
+            "title": "Data de Aposentadoria",
+            "type": "string",
+            "format": "default"
           },
           {
             "name": "id_data_desligamento",
-            "type": "any"
+            "description": "Data de desligamento, em casos de exoneração",
+            "title": "Data de desligamento, em casos de exoneração",
+            "type": "any",
+            "format": "default"
           }
         ]
       },
       "scheme": "file",
-      "title": "Insira um título humanamente legível para este recurso."
+      "title": "Relação Nominal de Servidores."
     }
   ],
-  "title": "Servidores_nominais"
+  "title": "Relação Nominal de Servidores"
 }
