@@ -1514,7 +1514,6 @@
     
     <script>
 
-        
         // ============================================
 // VARIÁVEIS GLOBAIS
 // ============================================
@@ -1546,6 +1545,24 @@ const chartColors = {
 };
 
 // ============================================
+// MESES (ESTAVA FALTANDO)
+// ============================================
+const monthNames = {
+  '01': 'Janeiro',
+  '02': 'Fevereiro',
+  '03': 'Março',
+  '04': 'Abril',
+  '05': 'Maio',
+  '06': 'Junho',
+  '07': 'Julho',
+  '08': 'Agosto',
+  '09': 'Setembro',
+  '10': 'Outubro',
+  '11': 'Novembro',
+  '12': 'Dezembro'
+};
+
+// ============================================
 // DATAPACKAGE (GitHub Pages)
 // ============================================
 const DATAPACKAGE_URL =
@@ -1565,8 +1582,15 @@ async function carregarDatapackage() {
 function indexarRecursos(dp) {
   const mapa = {};
 
+  if (!dp || !Array.isArray(dp.resources)) {
+    console.error('Datapackage inválido ou sem resources');
+    return mapa;
+  }
+
   dp.resources.forEach(r => {
-    const match = r.name && r.name.match(/dados_serv_(\d{6})/);
+    if (!r.name) return;
+
+    const match = r.name.match(/dados_serv_(\d{6})/);
     if (match) {
       mapa[match[1]] = {
         url: r.url,
@@ -1631,9 +1655,14 @@ async function carregarMes(key) {
       filteredData = data;
 
       console.log(`Dados ${key} carregados: ${data.length} registros`);
+    },
+    error: err => {
+      console.error('Erro no parse do CSV:', err);
     }
   });
 }
+
+
 
 // ============================================
 // INICIALIZAÇÃO
