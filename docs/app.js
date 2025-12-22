@@ -1,7 +1,7 @@
 // ============================================
 // CONFIGURAÇÃO
 // ============================================
-const DATAPACKAGE_URL = './datapackage.json';
+const DATAPACKAGE_URL = '/relacao_nominal_servidores/datapackage.json';
 const CORS_PROXY = 'https://corsproxy.io/?';
 
 let servidoresData = [];
