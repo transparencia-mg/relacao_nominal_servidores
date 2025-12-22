@@ -66,7 +66,7 @@ def main():
     print(f"📦 {len(resources)} resources encontrados")
 
     dp = {
-        "name": "relacao-nominal-servidores-mg",
+        "name": "relacao-nominal-servidores",
         "title": "Relação Nominal de Servidores – Minas Gerais",
         "resources": []
     }
