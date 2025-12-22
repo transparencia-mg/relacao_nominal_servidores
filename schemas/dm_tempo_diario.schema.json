@@ -1,0 +1,8 @@
+{
+  "fields": [
+    { "name": "masp", "type": "string" },
+    { "name": "data", "type": "date" },
+    { "name": "horas_trabalhadas", "type": "number" }
+  ],
+  "missingValues": [""]
+}

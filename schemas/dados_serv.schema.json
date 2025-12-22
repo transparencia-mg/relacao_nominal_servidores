@@ -1,0 +1,17 @@
+{
+  "fields": [
+    { "name": "ano_mes", "type": "string" },
+    { "name": "masp", "type": "string" },
+    { "name": "adm", "type": "string" },
+    { "name": "nome", "type": "string" },
+    { "name": "siglaefetivo", "type": "string" },
+    { "name": "nmefetivo", "type": "string" },
+    { "name": "cdcomi", "type": "string" },
+    { "name": "desccomi", "type": "string" },
+    { "name": "cd_funcao_gratif_gte", "type": "string" },
+    { "name": "desc_funcao_gratif_gte", "type": "string" },
+    { "name": "carga_horaria", "type": "string" },
+    { "name": "descsitserv", "type": "string" }
+  ],
+  "missingValues": [""]
+}

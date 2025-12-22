@@ -1,124 +1,84 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-Gera hash SHA256 de TODOS os CSVs do dataset no dados.mg,
-com tolerância a falhas (502, timeout, etc).
-"""
-
 import json
-import hashlib
-import requests
-import time
 from pathlib import Path
 
-CKAN_HOST = "https://dados.mg.gov.br"
-DATASET_NAME = "relacao_nominal_servidores"
-DATAPACKAGE = Path("datapackage/datapackage.json")
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-HEADERS = {
-    "User-Agent": "transparencia-mg/hash-generator",
-    "Accept": "application/json"
+HASHES_FILE = BASE_DIR / "datapackage" / "hashes.json"
+RESOURCES_FILE = BASE_DIR / "datapackage" / "resources.json"
+OUTPUT_FILE = BASE_DIR / "datapackage" / "datapackage.json"
+
+SCHEMA_DADOS_SERV = {
+    "fields": [
+        {"name": "ano_mes", "type": "string"},
+        {"name": "masp", "type": "string"},
+        {"name": "adm", "type": "string"},
+        {"name": "nome", "type": "string"},
+        {"name": "siglaefetivo", "type": "string"},
+        {"name": "nmefetivo", "type": "string"},
+        {"name": "cdcomi", "type": "string"},
+        {"name": "desccomi", "type": "string"},
+        {"name": "cd_funcao_gratif_gte", "type": "string"},
+        {"name": "desc_funcao_gratif_gte", "type": "string"},
+        {"name": "carga_horaria", "type": "string"},
+        {"name": "descsitserv", "type": "string"}
+    ],
+    "missingValues": [""]
 }
 
-MAX_RETRIES = 3
-RETRY_DELAY = 5  # segundos
-
-from typing import Optional
-
-def sha256_from_url(url: str) -> Optional[str]:
-    for tentativa in range(1, MAX_RETRIES + 1):
-        try:
-            h = hashlib.sha256()
-            with requests.get(url, stream=True, headers=HEADERS, timeout=600) as r:
-                r.raise_for_status()
-                for chunk in r.iter_content(chunk_size=1024 * 1024):
-                    if chunk:
-                        h.update(chunk)
-            return f"sha256:{h.hexdigest()}"
-        except Exception as e:
-            print(f"   ⚠️ Tentativa {tentativa}/{MAX_RETRIES} falhou: {e}")
-            if tentativa < MAX_RETRIES:
-                time.sleep(RETRY_DELAY)
-    return None
-
-def get_resources_from_ckan():
-    url = f"{CKAN_HOST}/api/3/action/package_show"
-    r = requests.get(url, params={"id": DATASET_NAME}, headers=HEADERS, timeout=60)
-    r.raise_for_status()
-    return r.json()["result"]["resources"]
-
-def is_csv(resource):
-    name = (resource.get("name") or "").lower()
-    fmt = (resource.get("format") or "").lower()
-    url = (resource.get("url") or "").lower()
-
-    return (
-        fmt == "csv"
-        or name.endswith(".csv")
-        or url.endswith(".csv")
-    )
-
 def main():
-    print("🔎 Consultando CKAN...")
-    resources = get_resources_from_ckan()
+    if not HASHES_FILE.exists():
+        raise RuntimeError("hashes.json não encontrado")
 
-    print(f"📦 {len(resources)} resources encontrados")
+    if not RESOURCES_FILE.exists():
+        raise RuntimeError("resources.json não encontrado")
 
-    dp = {
+    hashes = json.loads(HASHES_FILE.read_text(encoding="utf-8"))
+    resources_ckan = json.loads(RESOURCES_FILE.read_text(encoding="utf-8"))
+
+    resources = []
+
+    for r in resources_ckan:
+        name = r.get("name")
+        url = r.get("url")
+
+        if not name or not url:
+            continue
+
+        if not name.startswith("dados_serv_") or not name.endswith(".csv"):
+            continue
+
+        hash_value = hashes.get(name)
+        if not hash_value:
+            continue
+
+        resource = {
+            "name": name.replace(".csv", ""),
+            "title": f"Relação Nominal de Servidores – {name[-10:-4]}",
+            "format": "csv",
+            "mediatype": "text/csv",
+            "path": url,
+            "hash": hash_value,
+            "schema": SCHEMA_DADOS_SERV
+        }
+
+        resources.append(resource)
+
+    datapackage = {
         "name": "relacao-nominal-servidores",
-        "title": "Relação Nominal de Servidores – Minas Gerais",
-        "resources": []
+        "title": "Relação Nominal de Servidores do Estado de Minas Gerais",
+        "profile": "data-package",
+        "resources": resources
     }
 
-    falhas = []
-
-    for r in resources:
-        nome = r.get("name") or r["id"]
-
-        if not is_csv(r):
-            print(f"⏭️ Ignorado (não CSV): {nome}")
-            continue
-
-        url = r.get("url")
-        if not url:
-            print(f"⏭️ Ignorado (sem URL): {nome}")
-            continue
-
-        print(f"📄 Processando: {nome}")
-        hash_value = sha256_from_url(url)
-
-        if not hash_value:
-            print(f"❌ Falha definitiva: {nome}")
-            falhas.append(nome)
-            continue
-
-        dp["resources"].append({
-            "name": nome,
-            "title": r.get("description") or nome,
-            "format": "CSV",
-            "url": url,
-            "hash": hash_value
-        })
-
-        print(f"   ↳ {hash_value}")
-
-    DATAPACKAGE.parent.mkdir(exist_ok=True)
-    DATAPACKAGE.write_text(
-        json.dumps(dp, ensure_ascii=False, indent=2),
+    OUTPUT_FILE.write_text(
+        json.dumps(datapackage, indent=2, ensure_ascii=False),
         encoding="utf-8"
     )
 
-    print("\n✅ Hash gerado para todos os CSVs possíveis")
-
-    if falhas:
-        print("\n⚠️ Arquivos que não puderam ser processados:")
-        for f in falhas:
-            print(f" - {f}")
-
-        print("\n👉 Recomendação: rodar novamente mais tarde")
-    else:
-        print("\n🎉 Nenhuma falha encontrada")
+    print(f"✅ datapackage.json gerado com {len(resources)} recursos")
 
 if __name__ == "__main__":
     main()
