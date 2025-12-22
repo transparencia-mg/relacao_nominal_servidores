@@ -1513,52 +1513,79 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // ============================================
-        // VARIÁVEIS GLOBAIS
-        // ============================================
-        let servidoresData = [];
-        let filteredData = [];
-        let allData = {}; // Para armazenar dados por ano-mês
-        let currentPageDashboard1 = 1;
-        let currentPageDashboard2 = 1;
-        let itemsPerPageDashboard1 = 50;
-        let itemsPerPageDashboard2 = 50;
-        let charts = {};
-        let currentYear = '2025';
-        let currentMonth = '01';
-        let currentSortDashboard1 = { column: 'desc_instituicao', order: 'asc' };
-        let currentSortDashboard2 = { column: 'nome', order: 'asc' };
-        let currentSearchTerm = '';
+
         
-        const chartColors = {
-            primary: '#29435A',
-            accent: '#3A6EA5',
-            bright: '#2E86AB',
-            dark: '#132837',
-            secondaryGreen: '#3F704D',
-            secondaryBrown: '#8B7355',
-            secondaryTeal: '#20B2AA'
-        };
+        // ============================================
+// VARIÁVEIS GLOBAIS
+// ============================================
+let servidoresData = [];
+let filteredData = [];
+let allData = {}; // dados por ano-mês
 
-        // URLs dos CSVs no CKAN (exemplos)
-        const DATAPACKAGE_URL =
-          'https://transparencia-mg.github.io/relacao_nominal_servidores/datapackage/datapackage.json';
+let currentPageDashboard1 = 1;
+let currentPageDashboard2 = 1;
+let itemsPerPageDashboard1 = 50;
+let itemsPerPageDashboard2 = 50;
 
-            async function carregarDatapackage() {
-              const resp = await fetch(DATAPACKAGE_URL);
-              if (!resp.ok) throw new Error('Erro ao carregar datapackage');
-              return await resp.json();
-            }
+let charts = {};
+let currentYear = '2025';
+let currentMonth = '01';
 
-        // Recursos disponíveis (baseado nos resultados de busca)
-            let RECURSOS_POR_MES = {};
+let currentSortDashboard1 = { column: 'desc_instituicao', order: 'asc' };
+let currentSortDashboard2 = { column: 'nome', order: 'asc' };
+let currentSearchTerm = '';
 
-            document.addEventListener('DOMContentLoaded', async () => {
-              const dp = await carregarDatapackage();
-              RECURSOS_POR_MES = indexarRecursos(dp);
+const chartColors = {
+  primary: '#29435A',
+  accent: '#3A6EA5',
+  bright: '#2E86AB',
+  dark: '#132837',
+  secondaryGreen: '#3F704D',
+  secondaryBrown: '#8B7355',
+  secondaryTeal: '#20B2AA'
+};
 
-              console.log('Meses disponíveis:', Object.keys(RECURSOS_POR_MES));
-            });
+// ============================================
+// DATAPACKAGE (GitHub Pages)
+// ============================================
+const DATAPACKAGE_URL =
+  'https://transparencia-mg.github.io/relacao-nominal-servidores/datapackage.json';
+
+async function carregarDatapackage() {
+  const resp = await fetch(DATAPACKAGE_URL);
+  if (!resp.ok) {
+    throw new Error('Erro ao carregar datapackage.json');
+  }
+  return await resp.json();
+}
+
+// ============================================
+// INDEXAR RECURSOS (mes -> url + hash)
+// ============================================
+function indexarRecursos(dp) {
+  const mapa = {};
+
+  dp.resources.forEach(r => {
+    const match = r.name && r.name.match(/dados_serv_(\d{6})/);
+    if (match) {
+      mapa[match[1]] = {
+        url: r.url,
+        hash: r.hash
+      };
+    }
+  });
+
+  return mapa;
+}
+
+// ============================================
+// CARREGAR CSV DE UM MÊS (COM CORS PROXY)
+// ============================================
+async function carregarMes(key) {
+  const recurso = RECURSOS_POR_MES[key];
+  if (!recurso) {
+    throw new Error(`Mês ${key} não disponível`);
+  }
 
   console.log('Carregando CSV:', recurso.url);
   console.log('Hash:', recurso.hash);
@@ -1577,7 +1604,8 @@
     header: true,
     skipEmptyLines: true,
     complete: results => {
-      const [year, month] = [key.slice(0, 4), key.slice(4, 6)];
+      const year = key.slice(0, 4);
+      const month = key.slice(4, 6);
 
       const data = results.data.map(row => ({
         ano_mes: row.ano_mes || '',
@@ -1607,25 +1635,12 @@
   });
 }
 
-function indexarRecursos(dp) {
-  const mapa = {};
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
+let RECURSOS_POR_MES = {};
 
-  dp.resources.forEach(r => {
-    // exemplo: dados_serv_202501.csv
-    const match = r.name.match(/dados_serv_(\d{6})/);
-    if (match) {
-      mapa[match[1]] = {
-        url: r.url,
-        hash: r.hash
-      };
-    }
-  });
-
-  return mapa;
-}
-
-        // ==================== FUNÇÕES DE INICIALIZAÇÃO ====================
-        document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', async () => {
   console.log('=== INICIANDO DASHBOARD SERVIDORES ===');
   showLoading(true);
 
@@ -1635,6 +1650,7 @@ function indexarRecursos(dp) {
 
     console.log('Meses disponíveis:', Object.keys(RECURSOS_POR_MES));
 
+    // carrega o mês mais recente automaticamente
     const mesMaisRecente = Object.keys(RECURSOS_POR_MES).sort().pop();
     await carregarMes(mesMaisRecente);
 
@@ -1650,9 +1666,9 @@ function indexarRecursos(dp) {
     console.error(e);
     showError('Erro ao carregar dados.');
   } finally {
-    showLoading(false);
-  }
-});
+    showLoading(fal
+
+ 
 
         // ==================== CARREGAR DADOS DO CKAN ====================
         async function loadMonthData(year, month) {
