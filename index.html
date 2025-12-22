@@ -1493,6 +1493,7 @@
         </div>
     </div>
 
+    
     <!-- ==================== LOADING OVERLAY ==================== -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
@@ -1559,12 +1560,6 @@
               console.log('Meses disponíveis:', Object.keys(RECURSOS_POR_MES));
             });
 
-        async function carregarMes(key) {
-  const recurso = RECURSOS_POR_MES[key];
-  if (!recurso) {
-    throw new Error(`Mês ${key} não disponível`);
-  }
-
   console.log('Carregando CSV:', recurso.url);
   console.log('Hash:', recurso.hash);
 
@@ -1612,6 +1607,22 @@
   });
 }
 
+function indexarRecursos(dp) {
+  const mapa = {};
+
+  dp.resources.forEach(r => {
+    // exemplo: dados_serv_202501.csv
+    const match = r.name.match(/dados_serv_(\d{6})/);
+    if (match) {
+      mapa[match[1]] = {
+        url: r.url,
+        hash: r.hash
+      };
+    }
+  });
+
+  return mapa;
+}
 
         // ==================== FUNÇÕES DE INICIALIZAÇÃO ====================
         document.addEventListener('DOMContentLoaded', async () => {
