@@ -15,31 +15,61 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-22.04
+    environment:
+      name: github-pages
 
     steps:
+      # ------------------------------------------------
+      # 1️⃣ Checkout do repositório
+      # ------------------------------------------------
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
-      - name: 📁 Preparar conteúdo do Pages
+      # ------------------------------------------------
+      # 2️⃣ Verificação básica (debug)
+      # ------------------------------------------------
+      - name: 🔎 Verificar estrutura
         run: |
-          mkdir -p docs
-          echo "📄 Copiando datapackage para docs/"
-          cp datapackage/datapackage.json docs/datapackage.json
-          ls -lah docs
+          echo "== Conteúdo de docs/ =="
+          ls -lah docs || true
+          echo "== Conteúdo de datapackage/ =="
+          ls -lah datapackage || true
 
+      # ------------------------------------------------
+      # 3️⃣ Copiar datapackage CANÔNICO para docs/
+      #     (fonte → publicação)
+      # ------------------------------------------------
+      - name: 📁 Sincronizar datapackage para Pages
+        run: |
+          if [ ! -f datapackage/datapackage.json ]; then
+            echo "❌ datapackage/datapackage.json não encontrado"
+            exit 1
+          fi
+
+          cp datapackage/datapackage.json docs/datapackage.json
+
+      # ------------------------------------------------
+      # 4️⃣ Garantir que index.html existe
+      # ------------------------------------------------
+      - name: 🧪 Validar site estático
+        run: |
+          if [ ! -f docs/index.html ]; then
+            echo "❌ docs/index.html não encontrado"
+            exit 1
+          fi
+
+      # ------------------------------------------------
+      # 5️⃣ Upload do artefato do GitHub Pages
+      # ------------------------------------------------
       - name: 📦 Upload artefato do Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs
 
-  deploy:
-    runs-on: ubuntu-22.04
-    needs: build
-    environment:
-      name: github-pages
-
-    steps:
+      # ------------------------------------------------
+      # 6️⃣ Deploy
+      # ------------------------------------------------
       - name: 🚀 Deploy no GitHub Pages
         uses: actions/deploy-pages@v4
