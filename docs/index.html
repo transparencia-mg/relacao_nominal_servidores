@@ -1286,19 +1286,27 @@
                 <!-- Filtro de Download -->
                 <div class="filter-container">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4 col-12">
                             <div class="mb-3">
-                                <label for="anoDownload" class="form-label filter-label">Selecione o Ano para Download</label>
+                                <label for="anoDownload" class="form-label filter-label">Selecione o Ano</label>
                                 <select class="form-select" id="anoDownload">
                                     <option value="">Selecione um ano...</option>
-                                    <option value="2024">2024</option>
-                                    <option value="2025">2025</option>
+                                    <!-- Opções serão carregadas dinamicamente -->
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-6 d-flex align-items-end">
-                            <button class="btn-primary-custom w-100" id="downloadAnoCSV">
-                                <i class="fas fa-download me-2"></i>Baixar CSV do Ano Selecionado
+                        <div class="col-md-4 col-12">
+                            <div class="mb-3">
+                                <label for="mesDownload" class="form-label filter-label">Selecione o Mês</label>
+                                <select class="form-select" id="mesDownload">
+                                    <option value="">Selecione um mês...</option>
+                                    <!-- Opções serão carregadas dinamicamente -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4 col-12 d-flex align-items-end">
+                            <button class="btn-primary-custom w-100" id="downloadMesCSV">
+                                <i class="fas fa-download me-2"></i>Baixar CSV do Mês Selecionado
                             </button>
                         </div>
                     </div>
@@ -1315,7 +1323,7 @@
                                 <div class="card-stats">
                                     <i class="fas fa-database fa-3x mb-3" style="color: var(--primary-dark);"></i>
                                     <h4>Fonte dos Dados</h4>
-                                    <p class="text-muted" style="font-size: 13px;">Dados da Relação Nominal de Servidores do Poder Executivo de MG[citation:1][citation:5][citation:9]</p>
+                                    <p class="text-muted" style="font-size: 13px;">Dados da Relação Nominal de Servidores do Poder Executivo de MG</p>
                                     <div class="mt-3">
                                         <a href="https://dados.mg.gov.br/dataset/relacao_nominal_servidores" 
                                            target="_blank" 
@@ -1342,7 +1350,7 @@
                         </div>
 
                         <div class="mt-4">
-                            <h5 class="mb-3">Metadados - Estrutura dos Dados[citation:1][citation:5][citation:9]</h5>
+                            <h5 class="mb-3">Metadados - Estrutura dos Dados</h5>
                             <div class="table-responsive">
                                 <table class="table table-bordered">
                                     <thead>
@@ -1410,7 +1418,7 @@
                             <div class="alert alert-info mt-3">
                                 <i class="fas fa-info-circle me-2"></i>
                                 <strong>Fonte dos Dados:</strong> Os dados são carregados da API CKAN do Portal de Dados Abertos de Minas Gerais. 
-                                Cada arquivo CSV representa um mês específico (ex: dados_serv_202501.csv para Janeiro/2025)[citation:1].
+                                Cada arquivo CSV representa um mês específico (ex: dados_serv_202501.csv para Janeiro/2025).
                             </div>
                             
                             <div class="alert alert-success mt-2">
@@ -1513,387 +1521,232 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        // ============================================
+        // VARIÁVEIS GLOBAIS
+        // ============================================
+        let servidoresData = [];
+        let filteredData = [];
+        let allData = {}; // dados por ano-mês
+
+        let currentPageDashboard1 = 1;
+        let currentPageDashboard2 = 1;
+        let itemsPerPageDashboard1 = 50;
+        let itemsPerPageDashboard2 = 50;
+
+        let charts = {};
+        let currentYear = '';
+        let currentMonth = '';
+
+        let currentSortDashboard1 = { column: 'desc_instituicao', order: 'asc' };
+        let currentSortDashboard2 = { column: 'nome', order: 'asc' };
+        let currentSearchTerm = '';
+
+        const chartColors = {
+            primary: '#29435A',
+            accent: '#3A6EA5',
+            bright: '#2E86AB',
+            dark: '#132837',
+            secondaryGreen: '#3F704D',
+            secondaryBrown: '#8B7355',
+            secondaryTeal: '#20B2AA'
+        };
 
         // ============================================
-// VARIÁVEIS GLOBAIS
-// ============================================
-let servidoresData = [];
-let filteredData = [];
-let allData = {}; // dados por ano-mês
+        // MESES
+        // ============================================
+        const monthNames = {
+            '01': 'Janeiro',
+            '02': 'Fevereiro',
+            '03': 'Março',
+            '04': 'Abril',
+            '05': 'Maio',
+            '06': 'Junho',
+            '07': 'Julho',
+            '08': 'Agosto',
+            '09': 'Setembro',
+            '10': 'Outubro',
+            '11': 'Novembro',
+            '12': 'Dezembro'
+        };
 
-let currentPageDashboard1 = 1;
-let currentPageDashboard2 = 1;
-let itemsPerPageDashboard1 = 50;
-let itemsPerPageDashboard2 = 50;
+        // ============================================
+        // DATAPACKAGE (GitHub Pages)
+        // ============================================
+        const DATAPACKAGE_URL = 'https://transparencia-mg.github.io/relacao-nominal-servidores/datapackage.json';
 
-let charts = {};
-let currentYear = '2025';
-let currentMonth = '01';
-
-let currentSortDashboard1 = { column: 'desc_instituicao', order: 'asc' };
-let currentSortDashboard2 = { column: 'nome', order: 'asc' };
-let currentSearchTerm = '';
-
-const chartColors = {
-  primary: '#29435A',
-  accent: '#3A6EA5',
-  bright: '#2E86AB',
-  dark: '#132837',
-  secondaryGreen: '#3F704D',
-  secondaryBrown: '#8B7355',
-  secondaryTeal: '#20B2AA'
-};
-
-// ============================================
-// MESES (ESTAVA FALTANDO)
-// ============================================
-const monthNames = {
-  '01': 'Janeiro',
-  '02': 'Fevereiro',
-  '03': 'Março',
-  '04': 'Abril',
-  '05': 'Maio',
-  '06': 'Junho',
-  '07': 'Julho',
-  '08': 'Agosto',
-  '09': 'Setembro',
-  '10': 'Outubro',
-  '11': 'Novembro',
-  '12': 'Dezembro'
-};
-
-// ============================================
-// DATAPACKAGE (GitHub Pages)
-// ============================================
-const DATAPACKAGE_URL =
-  'https://transparencia-mg.github.io/relacao-nominal-servidores/datapackage.json';
-
-async function carregarDatapackage() {
-  const resp = await fetch(DATAPACKAGE_URL);
-  if (!resp.ok) {
-    throw new Error('Erro ao carregar datapackage.json');
-  }
-  return await resp.json();
-}
-
-// ============================================
-// INDEXAR RECURSOS (mes -> url + hash)
-// ============================================
-function indexarRecursos(dp) {
-  const mapa = {};
-
-  if (!dp || !Array.isArray(dp.resources)) {
-    console.error('Datapackage inválido ou sem resources');
-    return mapa;
-  }
-
-  dp.resources.forEach(r => {
-    if (!r.name) return;
-
-    const match = r.name.match(/dados_serv_(\d{6})/);
-    if (match) {
-      mapa[match[1]] = {
-        url: r.url,
-        hash: r.hash
-      };
-    }
-  });
-
-  return mapa;
-}
-
-// ============================================
-// CARREGAR CSV DE UM MÊS (COM CORS PROXY)
-// ============================================
-async function carregarMes(key) {
-  const recurso = RECURSOS_POR_MES[key];
-  if (!recurso) {
-    throw new Error(`Mês ${key} não disponível`);
-  }
-
-  console.log('Carregando CSV:', recurso.url);
-  console.log('Hash:', recurso.hash);
-
-  const urlComProxy =
-    'https://corsproxy.io/?' + encodeURIComponent(recurso.url);
-
-  const resp = await fetch(urlComProxy);
-  if (!resp.ok) {
-    throw new Error('Erro ao baixar CSV');
-  }
-
-  const csv = await resp.text();
-
-  Papa.parse(csv, {
-    header: true,
-    skipEmptyLines: true,
-    complete: results => {
-      const year = key.slice(0, 4);
-      const month = key.slice(4, 6);
-
-      const data = results.data.map(row => ({
-        ano_mes: row.ano_mes || '',
-        masp: row.masp || '',
-        adm: row.adm || '',
-        nome: row.nome || '',
-        siglaefetivo: row.siglaefetivo || '',
-        nmefetivo: row.nmefetivo || '',
-        cdcomi: row.cdcomi || '',
-        desccomi: row.desccomi || '',
-        cd_funcao_gratif_gte: row.cd_funcao_gratif_gte || '',
-        desc_funcao_gratif_gte: row.desc_funcao_gratif_gte || '',
-        carga_horaria: row.carga_horaria || '',
-        descsitserv: row.descsitserv || '',
-        ANO: year,
-        MES_NUM: month,
-        COMPETENCIA: `${year}-${month}`,
-        MES_REFERENCIA: `${monthNames[month]}/${year}`
-      }));
-
-      allData[key] = data;
-      servidoresData = data;
-      filteredData = data;
-
-      console.log(`Dados ${key} carregados: ${data.length} registros`);
-    },
-    error: err => {
-      console.error('Erro no parse do CSV:', err);
-    }
-  });
-}
-
-
-
-// ============================================
-// INICIALIZAÇÃO
-// ============================================
-let RECURSOS_POR_MES = {};
-
-document.addEventListener('DOMContentLoaded', async () => {
-  console.log('=== INICIANDO DASHBOARD SERVIDORES ===');
-  showLoading(true);
-
-  try {
-    const dp = await carregarDatapackage();
-    RECURSOS_POR_MES = indexarRecursos(dp);
-
-    console.log('Meses disponíveis:', Object.keys(RECURSOS_POR_MES));
-
-    // carrega o mês mais recente automaticamente
-    const mesMaisRecente = Object.keys(RECURSOS_POR_MES).sort().pop();
-    await carregarMes(mesMaisRecente);
-
-    updateDataAtualizacao();
-    updateFilterOptions();
-    updateDashboard1();
-    initializeDashboard2();
-    updateDashboard3();
-    setupEventListeners();
-
-    console.log('Dashboard carregado com sucesso!');
-  } catch (e) {
-    console.error(e);
-    showError('Erro ao carregar dados.');
-  } finally {
-    showLoading(false);
-  }
-})
-
- 
-
-        // ==================== CARREGAR DADOS DO CKAN ====================
-        async function loadMonthData(year, month) {
-            const key = `${year}${month.padStart(2, '0')}`;
-            
-            if (allData[key]) {
-                console.log(`Dados de ${month}/${year} já carregados.`);
-                servidoresData = allData[key];
-                filteredData = servidoresData;
-                return;
-            }
-
-            const resourceId = RECURSOS_POR_MES[key];
-            if (!resourceId) {
-                console.error(`Recurso para ${month}/${year} não encontrado.`);
-                return;
-            }
-
-            // Primeiro, obter a URL do CSV via API CKAN
-            const apiUrl = `${CKAN_BASE_URL}${resourceId}`;
-            console.log(`Obtendo URL do recurso: ${apiUrl}`);
+        // ============================================
+        // INICIALIZAÇÃO
+        // ============================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('=== INICIANDO DASHBOARD SERVIDORES ===');
+            showLoading(true);
 
             try {
-                const response = await fetch(apiUrl);
-                if (!response.ok) throw new Error('Erro ao acessar API CKAN');
+                // Carregar datapackage
+                const dp = await carregarDatapackage();
                 
-                const result = await response.json();
-                if (!result.success) throw new Error('Resposta da API não foi bem-sucedida');
+                // Indexar recursos por mês
+                const recursosPorMes = indexarRecursos(dp);
+                console.log('Meses disponíveis:', Object.keys(recursosPorMes));
+
+                // Encontrar o mês mais recente
+                const mesesDisponiveis = Object.keys(recursosPorMes).sort();
+                const mesMaisRecente = mesesDisponiveis[mesesDisponiveis.length - 1];
                 
-                const csvUrl = result.result.url;
-                console.log(`URL do CSV: ${csvUrl}`);
-                
-                // Agora carregar o CSV
-                await loadCSVData(csvUrl, year, month);
-                
-            } catch (error) {
-                console.error(`Erro ao obter URL do recurso:`, error);
-                // Fallback: tentar URL direta (pode não funcionar)
-                const fallbackUrl = `https://dados.mg.gov.br/dataset/relacao_nominal_servidores/resource/${resourceId}/download/dados_serv_${key}.csv`;
-                console.log(`Tentando fallback: ${fallbackUrl}`);
-                await loadCSVData(fallbackUrl, year, month);
+                if (!mesMaisRecente) {
+                    throw new Error('Nenhum mês disponível no datapackage');
+                }
+
+                currentYear = mesMaisRecente.substring(0, 4);
+                currentMonth = mesMaisRecente.substring(4, 6);
+
+                console.log(`Mês mais recente: ${currentYear}-${currentMonth}`);
+
+                // Carregar o mês mais recente
+                await carregarMes(mesMaisRecente, recursosPorMes);
+
+                updateDataAtualizacao();
+                updateFilterOptions();
+                updateDashboard1();
+                initializeDashboard2();
+                updateDashboard3();
+                setupEventListeners();
+
+                console.log('Dashboard carregado com sucesso!');
+            } catch (e) {
+                console.error('Erro ao inicializar:', e);
+                showError('Erro ao carregar dados. Por favor, tente novamente.');
+            } finally {
+                showLoading(false);
             }
+        });
+
+        // ============================================
+        // FUNÇÕES DO DATAPACKAGE
+        // ============================================
+        async function carregarDatapackage() {
+            const resp = await fetch(DATAPACKAGE_URL);
+            if (!resp.ok) {
+                throw new Error('Erro ao carregar datapackage.json');
+            }
+            return await resp.json();
         }
 
-        async function loadCSVData(csvUrl, year, month) {
-            const key = `${year}${month.padStart(2, '0')}`;
-            
+        function indexarRecursos(dp) {
+            const mapa = {};
+
+            if (!dp || !Array.isArray(dp.resources)) {
+                console.error('Datapackage inválido ou sem resources');
+                return mapa;
+            }
+
+            dp.resources.forEach(r => {
+                if (!r.name) return;
+
+                const match = r.name.match(/dados_serv_(\d{6})/);
+                if (match) {
+                    mapa[match[1]] = {
+                        url: r.url,
+                        hash: r.hash
+                    };
+                }
+            });
+
+            return mapa;
+        }
+
+        async function carregarMes(key, recursosPorMes) {
+            const recurso = recursosPorMes[key];
+            if (!recurso) {
+                throw new Error(`Mês ${key} não disponível`);
+            }
+
+            console.log('Carregando CSV:', recurso.url);
+
             return new Promise((resolve, reject) => {
-                Papa.parse(csvUrl, {
+                Papa.parse(recurso.url, {
                     download: true,
                     header: true,
                     skipEmptyLines: true,
                     encoding: 'UTF-8',
                     complete: function (results) {
-                        const data = results.data.map(row => {
-                            // Normalizar nomes de colunas e tipos de dados
-                            const servidor = {
-                                ano_mes: row.ano_mes || '',
-                                masp: row.masp || '',
-                                adm: row.adm || '',
-                                nome: row.nome || '',
-                                siglaefetivo: row.siglaefetivo || '',
-                                nmefetivo: row.nmefetivo || '',
-                                cdcomi: row.cdcomi || '',
-                                desccomi: row.desccomi || '',
-                                cd_funcao_gratif_gte: row.cd_funcao_gratif_gte || '',
-                                desc_funcao_gratif_gte: row.desc_funcao_gratif_gte || '',
-                                carga_horaria: parseInt(row.carga_horaria) || 0,
-                                cd_instituicao_dotacao: row.cd_instituicao_dotacao || '',
-                                sigla_instituicao_dotacao: row.sigla_instituicao_dotacao || '',
-                                desc_instituicao_dotacao: row.desc_instituicao_dotacao || '',
-                                cd_instituicao_lotacao: row.cd_instituicao_lotacao || '',
-                                sigla_instituicao_lotacao: row.sigla_instituicao_lotacao || '',
-                                desc_instituicao_lotacao: row.desc_instituicao_lotacao || '',
-                                descsitserv: row.descsitserv || '',
-                                id_data_inicio: row.id_data_inicio || row.data_inicio || '',
-                                id_data_aposentadoria: row.id_data_aposentadoria || row.data_aposentadoria || '',
-                                id_data_desligamento: row.id_data_desligamento || row.data_desligamento || ''
-                            };
+                        const year = key.substring(0, 4);
+                        const month = key.substring(4, 6);
 
-                            // Adicionar campos derivados
-                            servidor.ANO = year;
-                            servidor.MES_NUM = month.padStart(2, '0');
-                            servidor.COMPETENCIA = `${year}-${month.padStart(2, '0')}`;
-                            servidor.MES_REFERENCIA = `${monthNames[month.padStart(2, '0')]}/${year}`;
-
-                            return servidor;
-                        });
+                        const data = results.data.map(row => ({
+                            ano_mes: row.ano_mes || '',
+                            masp: row.masp || '',
+                            adm: row.adm || '',
+                            nome: row.nome || '',
+                            siglaefetivo: row.siglaefetivo || '',
+                            nmefetivo: row.nmefetivo || '',
+                            cdcomi: row.cdcomi || '',
+                            desccomi: row.desccomi || '',
+                            cd_funcao_gratif_gte: row.cd_funcao_gratif_gte || '',
+                            desc_funcao_gratif_gte: row.desc_funcao_gratif_gte || '',
+                            carga_horaria: parseInt(row.carga_horaria) || 0,
+                            cd_instituicao_dotacao: row.cd_instituicao_dotacao || '',
+                            sigla_instituicao_dotacao: row.sigla_instituicao_dotacao || '',
+                            desc_instituicao_dotacao: row.desc_instituicao_dotacao || '',
+                            cd_instituicao_lotacao: row.cd_instituicao_lotacao || '',
+                            sigla_instituicao_lotacao: row.sigla_instituicao_lotacao || '',
+                            desc_instituicao_lotacao: row.desc_instituicao_lotacao || '',
+                            descsitserv: row.descsitserv || '',
+                            id_data_inicio: row.id_data_inicio || row.data_inicio || '',
+                            id_data_aposentadoria: row.id_data_aposentadoria || row.data_aposentadoria || '',
+                            id_data_desligamento: row.id_data_desligamento || row.data_desligamento || '',
+                            ANO: year,
+                            MES_NUM: month,
+                            COMPETENCIA: `${year}-${month}`,
+                            MES_REFERENCIA: `${monthNames[month]}/${year}`
+                        }));
 
                         allData[key] = data;
                         servidoresData = data;
                         filteredData = data;
 
-                        console.log(`Dados de ${month}/${year} carregados: ${data.length} registros`);
-                        resolve();
+                        console.log(`Dados ${key} carregados: ${data.length} registros`);
+                        resolve(data);
                     },
                     error: function (err) {
-                        console.error(`Erro ao carregar CSV de ${month}/${year}:`, err);
+                        console.error(`Erro no parse do CSV ${key}:`, err);
                         reject(err);
                     }
                 });
             });
         }
 
-        // ==================== CONFIGURAR EVENT LISTENERS ====================
-        function setupEventListeners() {
-            // Filtros Dashboard 1
-            document.getElementById('aplicarFiltros').addEventListener('click', function() {
-                applyFilters('dashboard1');
-            });
-            document.getElementById('limparFiltros').addEventListener('click', function() {
-                clearAllFilters();
-            });
+        async function carregarMesPorAnoMes(ano, mes) {
+            const key = `${ano}${mes.padStart(2, '0')}`;
             
-            // Dashboard 2
-            document.getElementById('pesquisarServidores').addEventListener('click', function() {
-                applyFilters('dashboard2');
-            });
-            document.getElementById('limparFiltrosDashboard2').addEventListener('click', function() {
-                clearDashboard2Filters();
-            });
-            
-            // Exportação
-            document.getElementById('exportCSVDashboard1').addEventListener('click', () => exportToCSV('dashboard1'));
-            document.getElementById('printDashboard1').addEventListener('click', () => printDashboard('dashboard1'));
-           
-            document.getElementById('exportCSVDashboard2').addEventListener('click', () => exportToCSV('dashboard2'));
-            document.getElementById('printDashboard2').addEventListener('click', () => printDashboard('dashboard2'));
-            
-            // Download por ano na aba Downloads
-            document.getElementById('downloadAnoCSV').addEventListener('click', downloadYearCSV);
-            
-            // Campo de busca na Consulta Individual
-            document.getElementById('searchServidores').addEventListener('input', function(e) {
-                currentSearchTerm = e.target.value.toLowerCase();
-                filterServidoresTable(currentSearchTerm);
-            });
-            
-            // Troca de abas
-            document.getElementById('dashboard1-tab').addEventListener('click', function() {
-                setTimeout(updateDashboard1, 100);
-            });
-            document.getElementById('dashboard2-tab').addEventListener('click', function() {
-                setTimeout(updateDashboard2, 100);
-            });
-            
-            // Itens por página
-            document.getElementById('itemsPerPageDashboard1').addEventListener('change', function() {
-                itemsPerPageDashboard1 = parseInt(this.value);
-                currentPageDashboard1 = 1;
-                updateResumoTable();
-            });
-            
-            document.getElementById('itemsPerPageDashboard2').addEventListener('change', function() {
-                itemsPerPageDashboard2 = parseInt(this.value);
-                currentPageDashboard2 = 1;
-                updateServidoresTable();
-            });
-            
-            // Mudança de ano/mês nos selects
-            document.getElementById('anoDashboard1').addEventListener('change', async function() {
-                const selectedYear = this.value;
-                const selectedMonth = document.getElementById('mesDashboard1').value;
-                if (selectedYear !== currentYear || selectedMonth !== currentMonth) {
-                    await switchMonthData(selectedYear, selectedMonth);
+            // Verificar se já temos os dados carregados
+            if (allData[key]) {
+                servidoresData = allData[key];
+                filteredData = servidoresData;
+                return;
+            }
+
+            // Carregar datapackage novamente para garantir que temos os recursos atualizados
+            try {
+                const dp = await carregarDatapackage();
+                const recursosPorMes = indexarRecursos(dp);
+                
+                if (recursosPorMes[key]) {
+                    await carregarMes(key, recursosPorMes);
+                    currentYear = ano;
+                    currentMonth = mes.padStart(2, '0');
+                } else {
+                    throw new Error(`Mês ${mes}/${ano} não disponível`);
                 }
-            });
-            
-            document.getElementById('mesDashboard1').addEventListener('change', async function() {
-                const selectedMonth = this.value;
-                const selectedYear = document.getElementById('anoDashboard1').value;
-                if (selectedYear !== currentYear || selectedMonth !== currentMonth) {
-                    await switchMonthData(selectedYear, selectedMonth);
-                }
-            });
-            
-            document.getElementById('anoDashboard2').addEventListener('change', async function() {
-                const selectedYear = this.value;
-                const selectedMonth = document.getElementById('mesDashboard2').value;
-                if (selectedYear !== currentYear || selectedMonth !== currentMonth) {
-                    await switchMonthData(selectedYear, selectedMonth);
-                }
-            });
-            
-            document.getElementById('mesDashboard2').addEventListener('change', async function() {
-                const selectedMonth = this.value;
-                const selectedYear = document.getElementById('anoDashboard2').value;
-                if (selectedYear !== currentYear || selectedMonth !== currentMonth) {
-                    await switchMonthData(selectedYear, selectedMonth);
-                }
-            });
+            } catch (error) {
+                console.error(`Erro ao carregar mês ${mes}/${ano}:`, error);
+                throw error;
+            }
         }
 
-        // ==================== FUNÇÕES DE UTILIDADE ====================
+        // ============================================
+        // FUNÇÕES DE UTILIDADE
+        // ============================================
         function showLoading(show) {
             const overlay = document.getElementById('loadingOverlay');
             overlay.style.display = show ? 'flex' : 'none';
@@ -1918,32 +1771,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('footer-atualizacao').textContent = dataFormatada;
         }
 
-        // ==================== FUNÇÕES DE ANO E MES ====================
-        async function switchMonthData(year, month) {
-            showLoading(true);
-            try {
-                await loadMonthData(year, month);
-                currentYear = year;
-                currentMonth = month.padStart(2, '0');
-                updateFilterOptions();
-                updateDashboard1();
-                updateDashboard2();
-            } catch (error) {
-                console.error('Erro ao trocar mês:', error);
-                showError('Erro ao carregar dados do mês selecionado.');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // ==================== FUNÇÕES DE FILTRO ====================
+        // ============================================
+        // FUNÇÕES DE FILTRO
+        // ============================================
         function updateFilterOptions() {
+            // Obter todos os meses disponíveis do datapackage
+            const mesesDisponiveis = Object.keys(allData);
+            const anosUnicos = [...new Set(mesesDisponiveis.map(m => m.substring(0, 4)))].sort();
+            const mesesPorAno = {};
+            
+            anosUnicos.forEach(ano => {
+                mesesPorAno[ano] = mesesDisponiveis
+                    .filter(m => m.startsWith(ano))
+                    .map(m => m.substring(4, 6))
+                    .sort();
+            });
+
             // Dashboard 1 - Ano
             const anoSelect1 = document.getElementById('anoDashboard1');
             if (anoSelect1) {
                 anoSelect1.innerHTML = '';
-                const anos = ['2024', '2025'];
-                anos.forEach(ano => {
+                anosUnicos.forEach(ano => {
                     const option = document.createElement('option');
                     option.value = ano;
                     option.textContent = ano;
@@ -1954,13 +1802,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Dashboard 1 - Mês
             const mesSelect1 = document.getElementById('mesDashboard1');
-            if (mesSelect1 && currentYear) {
+            if (mesSelect1 && currentYear && mesesPorAno[currentYear]) {
                 mesSelect1.innerHTML = '';
-                const mesesDisponiveis = currentYear === '2024' ? 
-                    ['06'] : // Apenas junho para 2024[citation:5]
-                    ['01', '08']; // Janeiro e agosto para 2025[citation:1][citation:9]
-                
-                mesesDisponiveis.forEach(mesNum => {
+                mesesPorAno[currentYear].forEach(mesNum => {
                     const option = document.createElement('option');
                     option.value = mesNum;
                     option.textContent = monthNames[mesNum] || mesNum;
@@ -1973,8 +1817,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const anoSelect2 = document.getElementById('anoDashboard2');
             if (anoSelect2) {
                 anoSelect2.innerHTML = '';
-                const anos = ['2024', '2025'];
-                anos.forEach(ano => {
+                anosUnicos.forEach(ano => {
                     const option = document.createElement('option');
                     option.value = ano;
                     option.textContent = ano;
@@ -1985,19 +1828,33 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Dashboard 2 - Mês
             const mesSelect2 = document.getElementById('mesDashboard2');
-            if (mesSelect2 && currentYear) {
+            if (mesSelect2 && currentYear && mesesPorAno[currentYear]) {
                 mesSelect2.innerHTML = '';
-                const mesesDisponiveis = currentYear === '2024' ? 
-                    ['06'] : 
-                    ['01', '08'];
-                
-                mesesDisponiveis.forEach(mesNum => {
+                mesesPorAno[currentYear].forEach(mesNum => {
                     const option = document.createElement('option');
                     option.value = mesNum;
                     option.textContent = monthNames[mesNum] || mesNum;
                     if (mesNum === currentMonth) option.selected = true;
                     mesSelect2.appendChild(option);
                 });
+            }
+            
+            // Dashboard 3 - Download: Ano
+            const anoDownload = document.getElementById('anoDownload');
+            if (anoDownload) {
+                anoDownload.innerHTML = '<option value="">Selecione um ano...</option>';
+                anosUnicos.forEach(ano => {
+                    const option = document.createElement('option');
+                    option.value = ano;
+                    option.textContent = ano;
+                    anoDownload.appendChild(option);
+                });
+            }
+            
+            // Dashboard 3 - Download: Mês (será atualizado quando selecionar o ano)
+            const mesDownload = document.getElementById('mesDownload');
+            if (mesDownload) {
+                mesDownload.innerHTML = '<option value="">Selecione um mês...</option>';
             }
             
             // Obter todas as instituições únicas do período atual
@@ -2059,6 +1916,134 @@ document.addEventListener('DOMContentLoaded', async () => {
                         situacaoDatalist2.appendChild(option);
                     }
                 });
+            }
+        }
+
+        function updateMesesDownload() {
+            const anoDownload = document.getElementById('anoDownload');
+            const mesDownload = document.getElementById('mesDownload');
+            
+            if (!anoDownload || !mesDownload) return;
+            
+            const anoSelecionado = anoDownload.value;
+            if (!anoSelecionado) {
+                mesDownload.innerHTML = '<option value="">Selecione um mês...</option>';
+                return;
+            }
+            
+            // Obter meses disponíveis para o ano selecionado
+            const mesesDisponiveis = Object.keys(allData)
+                .filter(key => key.startsWith(anoSelecionado))
+                .map(key => key.substring(4, 6))
+                .sort();
+            
+            mesDownload.innerHTML = '<option value="">Selecione um mês...</option>';
+            mesesDisponiveis.forEach(mesNum => {
+                const option = document.createElement('option');
+                option.value = mesNum;
+                option.textContent = monthNames[mesNum] || mesNum;
+                mesDownload.appendChild(option);
+            });
+        }
+
+        // ============================================
+        // CONFIGURAR EVENT LISTENERS
+        // ============================================
+        function setupEventListeners() {
+            // Filtros Dashboard 1
+            document.getElementById('aplicarFiltros').addEventListener('click', function() {
+                applyFilters('dashboard1');
+            });
+            document.getElementById('limparFiltros').addEventListener('click', function() {
+                clearAllFilters();
+            });
+            
+            // Dashboard 2
+            document.getElementById('pesquisarServidores').addEventListener('click', function() {
+                applyFilters('dashboard2');
+            });
+            document.getElementById('limparFiltrosDashboard2').addEventListener('click', function() {
+                clearDashboard2Filters();
+            });
+            
+            // Exportação
+            document.getElementById('exportCSVDashboard1').addEventListener('click', () => exportToCSV('dashboard1'));
+            document.getElementById('printDashboard1').addEventListener('click', () => printDashboard('dashboard1'));
+            
+            document.getElementById('exportCSVDashboard2').addEventListener('click', () => exportToCSV('dashboard2'));
+            document.getElementById('printDashboard2').addEventListener('click', () => printDashboard('dashboard2'));
+            
+            // Download na aba Downloads
+            document.getElementById('downloadMesCSV').addEventListener('click', downloadMesCSV);
+            document.getElementById('anoDownload').addEventListener('change', updateMesesDownload);
+            
+            // Campo de busca na Consulta Individual
+            document.getElementById('searchServidores').addEventListener('input', function(e) {
+                currentSearchTerm = e.target.value.toLowerCase();
+                filterServidoresTable(currentSearchTerm);
+            });
+            
+            // Troca de abas
+            document.getElementById('dashboard1-tab').addEventListener('click', function() {
+                setTimeout(updateDashboard1, 100);
+            });
+            document.getElementById('dashboard2-tab').addEventListener('click', function() {
+                setTimeout(updateDashboard2, 100);
+            });
+            
+            // Itens por página
+            document.getElementById('itemsPerPageDashboard1').addEventListener('change', function() {
+                itemsPerPageDashboard1 = parseInt(this.value);
+                currentPageDashboard1 = 1;
+                updateResumoTable();
+            });
+            
+            document.getElementById('itemsPerPageDashboard2').addEventListener('change', function() {
+                itemsPerPageDashboard2 = parseInt(this.value);
+                currentPageDashboard2 = 1;
+                updateServidoresTable();
+            });
+            
+            // Mudança de ano/mês nos selects
+            document.getElementById('anoDashboard1').addEventListener('change', async function() {
+                const selectedYear = this.value;
+                const selectedMonth = document.getElementById('mesDashboard1').value;
+                await switchMonthData(selectedYear, selectedMonth);
+            });
+            
+            document.getElementById('mesDashboard1').addEventListener('change', async function() {
+                const selectedMonth = this.value;
+                const selectedYear = document.getElementById('anoDashboard1').value;
+                await switchMonthData(selectedYear, selectedMonth);
+            });
+            
+            document.getElementById('anoDashboard2').addEventListener('change', async function() {
+                const selectedYear = this.value;
+                const selectedMonth = document.getElementById('mesDashboard2').value;
+                await switchMonthData(selectedYear, selectedMonth);
+            });
+            
+            document.getElementById('mesDashboard2').addEventListener('change', async function() {
+                const selectedMonth = this.value;
+                const selectedYear = document.getElementById('anoDashboard2').value;
+                await switchMonthData(selectedYear, selectedMonth);
+            });
+        }
+
+        async function switchMonthData(year, month) {
+            if (!year || !month) return;
+            
+            showLoading(true);
+            try {
+                await carregarMesPorAnoMes(year, month);
+                updateFilterOptions();
+                updateDashboard1();
+                updateDashboard2();
+            } catch (error) {
+                console.error('Erro ao trocar mês:', error);
+                showError('Erro ao carregar dados do mês selecionado.');
+            } finally {
+                showLoading(false);
             }
         }
 
@@ -2258,7 +2243,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateDashboard2();
         }
 
-        // ==================== DASHBOARD 1: VISÃO GERAL ====================
+        // ============================================
+        // DASHBOARD 1: VISÃO GERAL
+        // ============================================
         function updateDashboard1() {
             updateSummaryCards();
             updateResumoTable();
@@ -2724,7 +2711,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // ==================== DASHBOARD 2: CONSULTA INDIVIDUAL ====================
+        // ============================================
+        // DASHBOARD 2: CONSULTA INDIVIDUAL
+        // ============================================
         function initializeDashboard2() {
             updateDashboard2();
         }
@@ -2901,7 +2890,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         };
 
-        // ==================== FUNÇÃO PARA MOSTRAR HISTÓRICO ====================
+        // ============================================
+        // FUNÇÃO PARA MOSTRAR HISTÓRICO
+        // ============================================
         window.showEmployeeHistory = function(masp, nome) {
             showLoading(true);
             
@@ -3006,7 +2997,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         };
 
-        // ==================== FUNÇÃO PARA FILTRAR POR INSTITUIÇÃO ====================
+        // ============================================
+        // FUNÇÃO PARA FILTRAR POR INSTITUIÇÃO
+        // ============================================
         window.filtrarPorInstituicao = function(instituicao) {
             console.log('Filtrando por instituição:', instituicao);
             
@@ -3055,35 +3048,45 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         };
 
-        // ==================== DASHBOARD 3: DOWNLOADS ====================
+        // ============================================
+        // DASHBOARD 3: DOWNLOADS
+        // ============================================
         function updateDashboard3() {
-            // Nada a fazer aqui
+            // Atualizar as opções de download
+            updateMesesDownload();
         }
 
-        async function downloadYearCSV() {
-            const year = document.getElementById('anoDownload').value;
-            if (!year) {
-                alert('Por favor, selecione um ano para download.');
+        async function downloadMesCSV() {
+            const ano = document.getElementById('anoDownload').value;
+            const mes = document.getElementById('mesDownload').value;
+            
+            if (!ano || !mes) {
+                alert('Por favor, selecione um ano e um mês para download.');
                 return;
             }
             
             showLoading(true);
             
             try {
-                // Carregar todos os meses do ano selecionado
-                const mesesDoAno = year === '2024' ? ['06'] : ['01', '08'];
-                let todosDadosAno = [];
+                const key = `${ano}${mes.padStart(2, '0')}`;
                 
-                for (const mes of mesesDoAno) {
-                    const key = `${year}${mes.padStart(2, '0')}`;
-                    if (!allData[key]) {
-                        await loadMonthData(year, mes);
+                // Verificar se já temos os dados carregados
+                if (!allData[key]) {
+                    // Carregar datapackage novamente para garantir que temos os recursos atualizados
+                    const dp = await carregarDatapackage();
+                    const recursosPorMes = indexarRecursos(dp);
+                    
+                    if (recursosPorMes[key]) {
+                        await carregarMes(key, recursosPorMes);
+                    } else {
+                        throw new Error(`Mês ${mes}/${ano} não disponível`);
                     }
-                    todosDadosAno = todosDadosAno.concat(allData[key] || []);
                 }
                 
-                if (todosDadosAno.length === 0) {
-                    alert(`Nenhum dado disponível para o ano ${year}.`);
+                const dadosMes = allData[key];
+                
+                if (!dadosMes || dadosMes.length === 0) {
+                    alert(`Nenhum dado disponível para ${monthNames[mes]}/${ano}.`);
                     showLoading(false);
                     return;
                 }
@@ -3093,7 +3096,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 'sigla_instituicao_lotacao', 'desc_instituicao_lotacao', 'descsitserv'];
                 const csvContent = [
                     headers.join(';'),
-                    ...todosDadosAno.map(servidor => [
+                    ...dadosMes.map(servidor => [
                         servidor.ano_mes,
                         servidor.masp,
                         servidor.adm,
@@ -3113,25 +3116,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const url = URL.createObjectURL(blob);
                 
                 link.setAttribute('href', url);
-                link.setAttribute('download', `relacao_nominal_servidores_mg_${year}.csv`);
+                link.setAttribute('download', `relacao_nominal_servidores_mg_${ano}_${mes}.csv`);
                 link.style.visibility = 'hidden';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 
-                console.log(`Download do ano ${year} realizado: ${todosDadosAno.length} registros`);
+                console.log(`Download do mês ${mes}/${ano} realizado: ${dadosMes.length} registros`);
                 
             } catch (error) {
-                console.error(`Erro ao baixar dados de ${year}:`, error);
-                alert(`Erro ao baixar dados de ${year}. Por favor, tente novamente.`);
+                console.error(`Erro ao baixar dados de ${mes}/${ano}:`, error);
+                alert(`Erro ao baixar dados de ${mes}/${ano}. Por favor, tente novamente.`);
             } finally {
                 showLoading(false);
             }
         }
 
-        // ==================== FUNÇÕES GLOBAIS E UTILITÁRIOS ====================
+        // ============================================
+        // FUNÇÕES GLOBAIS E UTILITÁRIOS
+        // ============================================
 
-        // ==================== FUNÇÕES DE ORDENAÇÃO ====================
+        // ============================================
+        // FUNÇÕES DE ORDENAÇÃO
+        // ============================================
         window.sortTable = function(tableType, column) {
             if (tableType === 'visaoGeral') {
                 // Verificar se está ordenando a mesma coluna
@@ -3160,7 +3167,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         };
 
-        // ==================== FUNÇÕES DE EXPORTAÇÃO ====================
+        // ============================================
+        // FUNÇÕES DE EXPORTAÇÃO
+        // ============================================
         function exportToCSV(source) {
             if (source === 'dashboard1') {
                 exportResumoCSV();
