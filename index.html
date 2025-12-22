@@ -1540,15 +1540,45 @@
         };
 
         // URLs dos CSVs no CKAN (exemplos)
-        const CKAN_BASE_URL = 'https://dados.mg.gov.br/api/3/action/resource_show?id=';
-        const DATASET_ID = '31bd2c27-b64f-447b-95db-83d221874951'; // ID do dataset de servidores[citation:1][citation:5][citation:9]
+        const DATAPACKAGE_URL =
+          'https://transparencia-mg.github.io/relacao-nominal-servidores-mg/datapackage/datapackage.json';
+
+            async function carregarDatapackage() {
+              const resp = await fetch(DATAPACKAGE_URL);
+              if (!resp.ok) throw new Error('Erro ao carregar datapackage');
+              return await resp.json();
+            }
 
         // Recursos disponíveis (baseado nos resultados de busca)
-        const RECURSOS_POR_MES = {
-            '202501': 'dc57c390-dda8-4360-8bfb-0474231108cd', // Janeiro 2025[citation:1]
-            '202508': '450768fc-7600-42a9-a20b-b45f89bf262e', // Agosto 2025[citation:9]
-            '202406': 'f312d623-a26f-4364-83a6-3fe4f4c4781a'  // Junho 2024[citation:5]
-        };
+            let RECURSOS_POR_MES = {};
+
+            document.addEventListener('DOMContentLoaded', async () => {
+              const dp = await carregarDatapackage();
+              RECURSOS_POR_MES = indexarRecursos(dp);
+
+              console.log('Meses disponíveis:', Object.keys(RECURSOS_POR_MES));
+            });
+
+            async function carregarMes(mes) {
+  const recurso = RECURSOS_POR_MES[mes];
+  if (!recurso) throw new Error('Mês não disponível');
+
+  const urlComProxy =
+    'https://corsproxy.io/?' + encodeURIComponent(recurso.url);
+
+  const resp = await fetch(urlComProxy);
+  const csv = await resp.text();
+
+  console.log('Hash do arquivo:', recurso.hash);
+
+  Papa.parse(csv, {
+    header: true,
+    skipEmptyLines: true,
+    complete: results => {
+      console.log(results.data);
+    }
+  });
+}
 
         const monthNames = {
             '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março',
@@ -1688,6 +1718,24 @@
                 });
             });
         }
+
+
+function indexarRecursos(dp) {
+  const mapa = {};
+
+  dp.resources.forEach(r => {
+    // exemplo: dados_serv_202501.csv
+    const match = r.name.match(/dados_serv_(\d{6})/);
+    if (match) {
+      mapa[match[1]] = {
+        url: r.url,
+        hash: r.hash
+      };
+    }
+  });
+
+  return mapa;
+}
 
         // ==================== CONFIGURAR EVENT LISTENERS ====================
         function setupEventListeners() {
