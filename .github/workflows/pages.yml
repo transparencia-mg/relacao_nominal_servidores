@@ -2,11 +2,7 @@ name: Publicar GitHub Pages
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - "docs/**"
-      - "datapackage/**"
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -26,10 +22,12 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
-      - name: 📁 Preparar pasta docs
+      - name: 📁 Preparar conteúdo do Pages
         run: |
           mkdir -p docs
+          echo "📄 Copiando datapackage para docs/"
           cp datapackage/datapackage.json docs/datapackage.json
+          ls -lah docs
 
       - name: 📦 Upload artefato do Pages
         uses: actions/upload-pages-artifact@v3
@@ -37,14 +35,12 @@ jobs:
           path: docs
 
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
     runs-on: ubuntu-22.04
     needs: build
+    environment:
+      name: github-pages
 
     steps:
-      - name: 🚀 Publicar no GitHub Pages
-        id: deployment
+      - name: 🚀 Deploy no GitHub Pages
         uses: actions/deploy-pages@v4
+
