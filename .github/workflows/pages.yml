@@ -28,30 +28,32 @@ jobs:
         uses: actions/checkout@v4
 
       # ------------------------------------------------
-      # 2️⃣ Verificação básica (debug)
+      # 2️⃣ Preparar conteúdo do Pages (PASSO QUE FALTAVA)
       # ------------------------------------------------
-      - name: 🔎 Verificar estrutura
+      - name: 🧱 Preparar conteúdo do Pages
         run: |
-          echo "== Conteúdo de docs/ =="
-          ls -lah docs || true
-          echo "== Conteúdo de datapackage/ =="
-          ls -lah datapackage || true
+          echo "🧹 Limpando pasta docs/"
+          rm -rf docs
+          mkdir docs
 
-      # ------------------------------------------------
-      # 3️⃣ Copiar datapackage CANÔNICO para docs/
-      #     (fonte → publicação)
-      # ------------------------------------------------
-      - name: 📁 Sincronizar datapackage para Pages
-        run: |
+          echo "📄 Copiando site estático"
+          cp docs_src/* docs/ 2>/dev/null || true
+          cp index.html docs/ 2>/dev/null || true
+          cp app.js docs/ 2>/dev/null || true
+          cp style.css docs/ 2>/dev/null || true
+
+          echo "📦 Copiando datapackage canônico"
           if [ ! -f datapackage/datapackage.json ]; then
             echo "❌ datapackage/datapackage.json não encontrado"
             exit 1
           fi
-
           cp datapackage/datapackage.json docs/datapackage.json
 
+          echo "📂 Conteúdo FINAL do docs/ (o que será publicado):"
+          ls -lah docs
+
       # ------------------------------------------------
-      # 4️⃣ Garantir que index.html existe
+      # 3️⃣ Validação mínima
       # ------------------------------------------------
       - name: 🧪 Validar site estático
         run: |
@@ -60,8 +62,13 @@ jobs:
             exit 1
           fi
 
+          if [ ! -f docs/datapackage.json ]; then
+            echo "❌ docs/datapackage.json não encontrado"
+            exit 1
+          fi
+
       # ------------------------------------------------
-      # 5️⃣ Upload do artefato do GitHub Pages
+      # 4️⃣ Upload do artefato do GitHub Pages
       # ------------------------------------------------
       - name: 📦 Upload artefato do Pages
         uses: actions/upload-pages-artifact@v3
@@ -69,7 +76,7 @@ jobs:
           path: docs
 
       # ------------------------------------------------
-      # 6️⃣ Deploy
+      # 5️⃣ Deploy
       # ------------------------------------------------
       - name: 🚀 Deploy no GitHub Pages
         uses: actions/deploy-pages@v4
