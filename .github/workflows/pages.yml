@@ -21,62 +21,69 @@ jobs:
       name: github-pages
 
     steps:
-      # ------------------------------------------------
-      # 1️⃣ Checkout do repositório
-      # ------------------------------------------------
+      # 1️⃣ Checkout
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
-      # ------------------------------------------------
-      # 2️⃣ Preparar conteúdo do Pages (PASSO QUE FALTAVA)
-      # ------------------------------------------------
-      - name: 🧱 Preparar conteúdo do Pages
+      # 2️⃣ Preparar conteúdo do Pages
+      - name: 🧱 Preparar conteúdo institucional
         run: |
           echo "🧹 Limpando pasta docs/"
           rm -rf docs
           mkdir docs
 
-          echo "📄 Copiando site estático"
-          cp docs_src/* docs/ 2>/dev/null || true
-          cp index.html docs/ 2>/dev/null || true
-          cp app.js docs/ 2>/dev/null || true
-          cp style.css docs/ 2>/dev/null || true
+          echo "📄 Criando página institucional simples"
+          cat << 'EOF' > docs/index.html
+          <!DOCTYPE html>
+          <html lang="pt-br">
+          <head>
+            <meta charset="UTF-8">
+            <title>Relação Nominal de Servidores – MG</title>
+          </head>
+          <body>
+            <h1>Relação Nominal de Servidores – MG</h1>
+            <p>
+              Este repositório gerencia metadados e publicação do dataset
+              <strong>Relação Nominal de Servidores</strong> no portal dados.mg.
+            </p>
 
-          echo "📦 Copiando datapackage canônico"
+            <p>
+              <a href="datapackage.json">📦 Acessar datapackage.json</a>
+            </p>
+
+            <p>
+              Fonte oficial:
+              <a href="https://dados.mg.gov.br/dataset/relacao_nominal_servidores">
+                dados.mg
+              </a>
+            </p>
+          </body>
+          </html>
+          EOF
+
+          echo "📦 Copiando datapackage.json"
           if [ ! -f datapackage/datapackage.json ]; then
             echo "❌ datapackage/datapackage.json não encontrado"
             exit 1
           fi
           cp datapackage/datapackage.json docs/datapackage.json
 
-          echo "📂 Conteúdo FINAL do docs/ (o que será publicado):"
+          echo "📂 Conteúdo final do docs/:"
           ls -lah docs
 
-      # ------------------------------------------------
-      # 3️⃣ Validação mínima
-      # ------------------------------------------------
-      - name: 🧪 Validar site estático
+      # 3️⃣ Validação
+      - name: 🧪 Validar Pages
         run: |
-          if [ ! -f docs/index.html ]; then
-            echo "❌ docs/index.html não encontrado"
-            exit 1
-          fi
+          test -f docs/index.html
+          test -f docs/datapackage.json
 
-          if [ ! -f docs/datapackage.json ]; then
-            echo "❌ docs/datapackage.json não encontrado"
-            exit 1
-          fi
-
-      # ------------------------------------------------
-      # 4️⃣ Upload do artefato do GitHub Pages
-      # ------------------------------------------------
-      - name: 📦 Upload artefato do Pages
+      # 4️⃣ Upload do artefato
+      - name: 📦 Upload artefato Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs
 
-      # ------------------------------------------------
       # 5️⃣ Deploy
-      # ------------------------------------------------
       - name: 🚀 Deploy no GitHub Pages
         uses: actions/deploy-pages@v4
+

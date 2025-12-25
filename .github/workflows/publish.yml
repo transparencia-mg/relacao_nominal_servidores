@@ -1,57 +1,41 @@
-name: Atualizar hash, metadados e Pages
+name: Publicar dataset no dados.mg (CKAN)
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "datapackage/**"
+      - "scripts/**"
 
 jobs:
-  atualizar:
+  publish_ckan:
     runs-on: ubuntu-22.04
 
     steps:
+      # 1️⃣ Checkout
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
+      # 2️⃣ Python
       - name: 🐍 Configurar Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.10"
 
-      - name: 📦 Instalar dependências
+      # 3️⃣ Instalar dependências
+      - name: 📦 Instalar dpckan
         run: |
           python -m pip install --upgrade pip
-          pip install requests dpckan frictionless
+          pip install dpckan frictionless requests
 
-      # 1️⃣ VALIDAR SCHEMA (PRIMEIRO)
-      - name: 🧪 Validar schema dos arquivos no CKAN
-        run: python scripts/validar_schema_ckan.py
-
-      # 2️⃣ GERAR HASH (SÓ SE SCHEMA PASSAR)
-      - name: 🔐 Gerar hash dos arquivos no CKAN
-        run: python scripts/gerar_hash_ckan.py
-
-      # 3️⃣ NORMALIZAR DATAPACKAGE
-      - name: 📦 Normalizar datapackage
-        run: python scripts/gerar_datapackage.py
-
-      # 4️⃣ VERIFICAR SE TEVE MUDANÇA
-      - name: 🔎 Verificar se houve mudança no datapackage
-        id: diff
-        run: |
-          git diff --quiet datapackage/datapackage.json || echo "changed=true" >> $GITHUB_OUTPUT
-
-      # 5️⃣ PUBLICAR METADADOS NO CKAN (SÓ SE MUDOU)
-      - name: 🚀 Atualizar metadados no CKAN
-        if: steps.diff.outputs.changed == 'true'
+      # 4️⃣ Publicar no CKAN
+      - name: 🚀 Publicar dataset no dados.mg
         env:
-          CKAN_HOST: https://dados.mg.gov.br
+          CKAN_HOST: ${{ secrets.CKAN_HOST }}
           CKAN_KEY: ${{ secrets.CKAN_KEY }}
-        run: python scripts/publicar_ckan.py
-
-      # 6️⃣ COMMIT AUTOMÁTICO
-      - name: 💾 Commit do datapackage atualizado
-        if: steps.diff.outputs.changed == 'true'
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "Atualiza hash e metadados do dataset (dados.mg)"
-          file_pattern: datapackage/datapackage.json
-
+        run: |
+          dpckan dataset create \
+            --datapackage datapackage/datapackage.json \
+            --ckan-host "$CKAN_HOST" \
+            --ckan-key "$CKAN_KEY"
