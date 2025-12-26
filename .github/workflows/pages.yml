@@ -1,4 +1,4 @@
-name: Publicar GitHub Pages
+name: Publicar GitHub Pages (site estático)
 
 on:
   push:
@@ -21,39 +21,31 @@ jobs:
       name: github-pages
 
     steps:
-      # 1️⃣ Checkout
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
-      # 2️⃣ Preparar conteúdo do Pages
-      - name: 🧱 Preparar conteúdo do Pages
-  run: |
-    echo "🧹 Limpando pasta docs/"
-    rm -rf docs
-    mkdir docs
+      - name: 🧱 Preparar site estático
+        run: |
+          echo "🧹 Limpando docs/"
+          rm -rf docs
+          mkdir docs
 
-    echo "📄 Copiando dashboard"
-    cp -r pages/* docs/
+          echo "📄 Copiando dashboard (pages → docs)"
+          cp -r pages/* docs/
 
-    echo "🚫 Desativando Jekyll"
-    cp .nojekyll docs/.nojekyll
+          echo "🚫 Desativando Jekyll"
+          touch docs/.nojekyll
 
-    echo "📦 Copiando datapackage.json"
-    cp datapackage/datapackage.json docs/datapackage.json
+          echo "📦 Copiando datapackage.json"
+          cp datapackage/datapackage.json docs/datapackage.json
 
-    echo "📂 Conteúdo final do docs/"
-    ls -R docs
+          echo "📂 Conteúdo final publicado:"
+          ls -R docs
 
-
-      # 3️⃣ Upload do artefato
       - name: 📦 Upload artefato Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs
 
-      # 4️⃣ Deploy
       - name: 🚀 Deploy no GitHub Pages
         uses: actions/deploy-pages@v4
-
-
-
