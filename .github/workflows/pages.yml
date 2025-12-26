@@ -24,24 +24,26 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
-      - name: 🧱 Preparar conteúdo do Pages
-        run: |
-          echo "🧹 Limpando docs/"
-          rm -rf docs
-          mkdir docs
+      - name: # 2️⃣ Preparar conteúdo do Pages
 
-          echo "📄 Copiando dashboard HTML"
-          cp pages/index.html docs/index.html
+  run: |
+    echo "🧹 Limpando pasta docs/"
+    rm -rf docs
+    mkdir docs
 
-          echo "📊 Copiando CSVs"
-          mkdir docs/data
-          cp data/*.csv docs/data/
+    echo "📄 Copiando dashboard"
+    cp -r pages/* docs/
 
-          echo "📦 Copiando datapackage.json"
-          cp datapackage/datapackage.json docs/datapackage.json
+    echo "📦 Copiando datapackage.json"
+    if [ ! -f datapackage/datapackage.json ]; then
+      echo "❌ datapackage/datapackage.json não encontrado"
+      exit 1
+    fi
+    cp datapackage/datapackage.json docs/datapackage.json
 
-          echo "📂 Conteúdo final:"
-          ls -R docs
+    echo "📂 Conteúdo final do docs/"
+    ls -lah docs
+
 
       - name: 📦 Upload artefato Pages
         uses: actions/upload-pages-artifact@v3
