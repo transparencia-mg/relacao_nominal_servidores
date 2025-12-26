@@ -1573,19 +1573,43 @@
         };
 
         // ============================================
-        // URL DO DATAPACKAGE
+        // URL DO DATAPACKAGE - CORRIGIDA
         // ============================================
-        const DATAPACKAGE_URL = 'docs/datapackage.json';
+        const DATAPACKAGE_URLS = [
+            'docs/datapackage.json',
+            './docs/datapackage.json',
+            'datapackage.json',
+            './datapackage.json'
+        ];
 
         // ============================================
-        // FUNÇÃO PARA LER O DATAPACKAGE
+        // FUNÇÃO PARA LER O DATAPACKAGE (COM FALLBACK)
         // ============================================
         async function carregarDatapackage() {
-            const resp = await fetch(DATAPACKAGE_URL);
-            if (!resp.ok) {
-                throw new Error('Erro ao carregar datapackage.json');
+            let lastError = null;
+            
+            // Tentar todas as URLs possíveis
+            for (const url of DATAPACKAGE_URLS) {
+                try {
+                    console.log(`📂 Tentando carregar datapackage de: ${url}`);
+                    const resp = await fetch(url);
+                    
+                    if (!resp.ok) {
+                        console.warn(`❌ Não encontrado em: ${url}`);
+                        continue;
+                    }
+                    
+                    const data = await resp.json();
+                    console.log(`✅ Datapackage carregado de: ${url}`);
+                    return data;
+                } catch (error) {
+                    lastError = error;
+                    console.warn(`⚠️ Erro ao carregar ${url}:`, error.message);
+                }
             }
-            return await resp.json();
+            
+            // Se nenhum arquivo foi encontrado, lançar erro
+            throw new Error('Não foi possível carregar o datapackage.json de nenhum dos caminhos: ' + DATAPACKAGE_URLS.join(', '));
         }
 
         // ============================================
@@ -1685,11 +1709,14 @@
             showLoading(true);
 
             try {
+                console.log('📦 Tentando carregar datapackage...');
                 const dp = await carregarDatapackage();
                 const { mapa, mesesDisponiveis } = indexarRecursosPorMes(dp);
                 
                 RECURSOS_POR_MES = mapa;
                 MESES_DISPONIVEIS = mesesDisponiveis;
+                
+                console.log(`📊 Recursos disponíveis: ${MESES_DISPONIVEIS.length} meses`);
                 
                 // Obter o mês mais recente
                 const mesRecente = obterMesMaisRecente(MESES_DISPONIVEIS);
@@ -1704,6 +1731,7 @@
                 console.log(`📅 Mês mais recente: ${currentMonth}/${currentYear}`);
                 
                 // Carregar os dados
+                console.log('🌐 Carregando dados do DataStore...');
                 const dados = await carregarMesDatastore(currentYear, currentMonth);
                 
                 servidoresData = dados.map(row => ({
@@ -1740,11 +1768,93 @@
                 console.log(`✅ Dados carregados: ${servidoresData.length} servidores`);
 
             } catch (e) {
-                console.error('Erro ao carregar dados mais recentes:', e);
-                showError('Erro ao carregar dados do DataStore');
+                console.error('❌ Erro ao carregar dados mais recentes:', e);
+                showError('Erro ao carregar dados do DataStore: ' + e.message);
+                
+                // Tentar carregar dados de demonstração se o datapackage não estiver disponível
+                await carregarDadosDemonstracao();
             } finally {
                 showLoading(false);
             }
+        }
+
+        // ============================================
+        // FUNÇÃO PARA CARREGAR DADOS DE DEMONSTRAÇÃO (FALLBACK)
+        // ============================================
+        async function carregarDadosDemonstracao() {
+            console.log('📝 Carregando dados de demonstração...');
+            
+            // Dados de demonstração
+            servidoresData = [
+                {
+                    ano_mes: '202411',
+                    masp: '123456',
+                    adm: '7890',
+                    nome: 'MARIA DA SILVA',
+                    siglaefetivo: 'TEC',
+                    nmefetivo: 'TÉCNICO EM ADMINISTRAÇÃO',
+                    carga_horaria: 40,
+                    sigla_instituicao_lotacao: 'SEPLAG',
+                    desc_instituicao_lotacao: 'SECRETARIA DE ESTADO DE PLANEJAMENTO E GESTÃO',
+                    descsitserv: 'ATIVO'
+                },
+                {
+                    ano_mes: '202411',
+                    masp: '234567',
+                    adm: '7891',
+                    nome: 'JOSÉ SANTOS',
+                    siglaefetivo: 'ANAL',
+                    nmefetivo: 'ANALISTA DE SISTEMAS',
+                    carga_horaria: 40,
+                    sigla_instituicao_lotacao: 'SEPLAG',
+                    desc_instituicao_lotacao: 'SECRETARIA DE ESTADO DE PLANEJAMENTO E GESTÃO',
+                    descsitserv: 'ATIVO'
+                },
+                {
+                    ano_mes: '202411',
+                    masp: '345678',
+                    adm: '7892',
+                    nome: 'ANA OLIVEIRA',
+                    siglaefetivo: 'ADM',
+                    nmefetivo: 'ADMINISTRADOR',
+                    carga_horaria: 30,
+                    sigla_instituicao_lotacao: 'SEDESE',
+                    desc_instituicao_lotacao: 'SECRETARIA DE ESTADO DE DESENVOLVIMENTO SOCIAL',
+                    descsitserv: 'ATIVO'
+                }
+            ];
+
+            filteredData = [...servidoresData];
+            
+            currentYear = '2024';
+            currentMonth = '11';
+            
+            // Atualizar dropdowns
+            MESES_DISPONIVEIS = [
+                { anoMes: '202411', ano: '2024', mes: '11', resourceId: 'demo' },
+                { anoMes: '202410', ano: '2024', mes: '10', resourceId: 'demo' },
+                { anoMes: '202409', ano: '2024', mes: '09', resourceId: 'demo' }
+            ];
+            
+            atualizarDropdownsMeses();
+            
+            // Atualizar dashboards
+            updateDashboard1();
+            updateDashboard2();
+            updateFilterOptions();
+            
+            // Atualizar as novas tabelas simples
+            updateTabelaVisaoGeral();
+            updateTabelaDetalhada();
+
+            // Atualizar informações do arquivo
+            document.getElementById('arquivoAtual').textContent = `dados_serv_${currentYear}${currentMonth} (Demo)`;
+            document.getElementById('arquivoFooter').textContent = `dados_serv_${currentYear}${currentMonth}.csv (Dados de Demonstração)`;
+
+            console.log('✅ Dados de demonstração carregados');
+            
+            // Mostrar mensagem informativa
+            showInfo('Dados de demonstração carregados. Para carregar dados reais, certifique-se de que o arquivo docs/datapackage.json está disponível.');
         }
 
         // ============================================
@@ -1845,7 +1955,7 @@
 
             } catch (e) {
                 console.error('Erro ao inicializar:', e);
-                showError('Erro ao inicializar o dashboard');
+                showError('Erro ao inicializar o dashboard: ' + e.message);
             }
         });
 
@@ -1885,6 +1995,18 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
             container.prepend(errorDiv);
+        }
+
+        function showInfo(message) {
+            const container = document.querySelector('.container');
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'alert alert-info alert-dismissible fade show';
+            infoDiv.innerHTML = `
+                <i class="fas fa-info-circle me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            container.prepend(infoDiv);
         }
 
         // ============================================
@@ -2006,7 +2128,7 @@
                     
                 } catch (e) {
                     console.error('Erro ao carregar dados:', e);
-                    showError('Erro ao carregar dados do DataStore');
+                    showError('Erro ao carregar dados do DataStore: ' + e.message);
                 } finally {
                     showLoading(false);
                 }
