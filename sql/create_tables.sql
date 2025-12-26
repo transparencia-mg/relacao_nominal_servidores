@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS servidores (
+  ano_mes TEXT,
+  masp TEXT,
+  adm TEXT,
+  nome TEXT,
+  siglaefetivo TEXT,
+  nmefetivo TEXT,
+  cdcomi TEXT,
+  desccomi TEXT,
+  cd_funcao_gratif_gte TEXT,
+  desc_funcao_gratif_gte TEXT,
+  carga_horaria TEXT,
+  cd_instituicao_dotacao TEXT,
+  sigla_instituicao_dotacao TEXT,
+  desc_instituicao_dotacao TEXT,
+  cd_instituicao_lotacao TEXT,
+  sigla_instituicao_lotacao TEXT,
+  desc_instituicao_lotacao TEXT,
+  descsitserv TEXT,
+  data_inicio TEXT,
+  data_aposentadoria TEXT,
+  data_desligamento TEXT
+);

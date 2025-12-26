@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Ambiente
+.env
+
+# PostgreSQL dumps
+*.sql.dump
+
+# Temporários
+tmp/
+.cache/
