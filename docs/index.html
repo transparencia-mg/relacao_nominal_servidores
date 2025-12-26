@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
     
-        <style>
+    <style>
         /* ==================== VARIÁVEIS DE CORES ==================== */
         :root {
             --primary-dark: #29435A;
@@ -1054,6 +1054,51 @@
                     </div>
                 </div>
 
+                <!-- Visão Geral (Tabela Simples) -->
+                <div class="table-container mb-4">
+                    <div class="table-header">
+                        <h3 class="table-title">Visão Geral por Instituição</h3>
+                    </div>
+                    <div class="p-3">
+                        <h3>Visão Geral</h3>
+                        <table id="tabela-visao-geral" border="1" class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Sigla</th>
+                                    <th>Órgão</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JS preenche aqui -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Detalhado (Tabela Simples) -->
+                <div class="table-container mb-4">
+                    <div class="table-header">
+                        <h3 class="table-title">Detalhado por Servidor</h3>
+                    </div>
+                    <div class="p-3">
+                        <h3>Detalhado</h3>
+                        <table id="tabela-detalhada" border="1" class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>MASP</th>
+                                    <th>Nome</th>
+                                    <th>Órgão</th>
+                                    <th>Cargo</th>
+                                    <th>Carga Horária</th>
+                                    <th>Situação</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- Ações Dashboard 1 -->
                 <div class="actions-container mb-4">
                     <div class="export-buttons">
@@ -1069,7 +1114,7 @@
                 <!-- Tabela Dashboard 1 - VISÃO GERAL POR INSTITUIÇÃO -->
                 <div class="table-container">
                     <div class="table-header">
-                        <h3 class="table-title">Visão Geral por Instituição</h3>
+                        <h3 class="table-title">Visão Geral por Instituição (Detalhado)</h3>
                         <div class="d-flex align-items-center gap-3 ms-auto">
                             <div class="items-per-page">
                                 <span>Itens por página:</span>
@@ -1480,7 +1525,7 @@
                 </div>
             </div>
         </div>
-    </modal>
+    </div>
 
     <!-- ==================== LOADING OVERLAY ==================== -->
     <div class="loading-overlay" id="loadingOverlay">
@@ -1683,6 +1728,10 @@
                 updateDashboard1();
                 updateDashboard2();
                 updateFilterOptions();
+                
+                // Atualizar as novas tabelas simples
+                updateTabelaVisaoGeral();
+                updateTabelaDetalhada();
 
                 // Atualizar informações do arquivo
                 document.getElementById('arquivoAtual').textContent = `dados_serv_${currentYear}${currentMonth}`;
@@ -1946,6 +1995,10 @@
                     updateDashboard1();
                     updateDashboard2();
                     updateFilterOptions();
+                    
+                    // Atualizar as novas tabelas simples
+                    updateTabelaVisaoGeral();
+                    updateTabelaDetalhada();
 
                     // Atualizar informações do arquivo
                     document.getElementById('arquivoAtual').textContent = `dados_serv_${ano}${mes}`;
@@ -1964,6 +2017,8 @@
                 document.getElementById('instituicaoDashboard1').value = '';
                 filteredData = [...servidoresData];
                 updateDashboard1();
+                updateTabelaVisaoGeral();
+                updateTabelaDetalhada();
             });
             
             // Dashboard 2 - Pesquisar
@@ -2108,6 +2163,68 @@
                 if (paginationInfo) paginationInfo.textContent = 'Mostrando 0-0 de 0 registros';
                 updatePaginationDashboard2(1, 1);
             }
+        }
+
+        // ============================================
+        // FUNÇÕES PARA AS NOVAS TABELAS SIMPLES
+        // ============================================
+        function updateTabelaVisaoGeral() {
+            if (!filteredData || filteredData.length === 0) return;
+            
+            const grupos = {};
+            filteredData.forEach(servidor => {
+                const sigla = servidor.sigla_instituicao_lotacao || '';
+                const orgao = servidor.desc_instituicao_lotacao || 'Não informado';
+                
+                const key = sigla + '|' + orgao;
+                if (!grupos[key]) {
+                    grupos[key] = {
+                        sigla: sigla,
+                        orgao: orgao,
+                        total: 0
+                    };
+                }
+                grupos[key].total++;
+            });
+            
+            const tbody = document.querySelector('#tabela-visao-geral tbody');
+            if (!tbody) return;
+            
+            let rowsHTML = '';
+            Object.values(grupos).sort((a, b) => b.total - a.total).forEach(item => {
+                rowsHTML += `
+                    <tr>
+                        <td>${item.sigla}</td>
+                        <td>${item.orgao}</td>
+                        <td>${item.total}</td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = rowsHTML;
+        }
+
+        function updateTabelaDetalhada() {
+            if (!filteredData || filteredData.length === 0) return;
+            
+            const tbody = document.querySelector('#tabela-detalhada tbody');
+            if (!tbody) return;
+            
+            let rowsHTML = '';
+            filteredData.slice(0, 50).forEach(servidor => {
+                rowsHTML += `
+                    <tr>
+                        <td>${servidor.masp || ''}</td>
+                        <td>${servidor.nome || ''}</td>
+                        <td>${servidor.desc_instituicao_lotacao || ''}</td>
+                        <td>${servidor.nmefetivo || ''}</td>
+                        <td>${servidor.carga_horaria || 0}h</td>
+                        <td>${servidor.descsitserv || ''}</td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = rowsHTML;
         }
 
         // ============================================
@@ -3037,8 +3154,8 @@
         let filteredData = [];
     </script>
 
-<!-- JS do dashboard -->
-<script src="assets/js/app.js"></script>
+    <!-- JS do dashboard -->
+    <script src="assets/js/app.js"></script>
 
 </body>
 </html>
