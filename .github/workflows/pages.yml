@@ -24,22 +24,9 @@ jobs:
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
-      - name: 🧱 Preparar site estático
+      - name: 🚫 Desativar Jekyll
         run: |
-          echo "🧹 Limpando docs/"
-          rm -rf docs
-          mkdir docs
-
-          echo "📄 Copiando dashboard"
-          cp -r src/* docs/
-
-          echo "📦 (Opcional) Copiando datapackage.json"
-          if [ -f datapackage/datapackage.json ]; then
-            cp datapackage/datapackage.json docs/datapackage.json
-          fi
-
-          echo "📂 Conteúdo final do docs/"
-          ls -lah docs
+          touch docs/.nojekyll
 
       - name: 📦 Upload artefato Pages
         uses: actions/upload-pages-artifact@v3
