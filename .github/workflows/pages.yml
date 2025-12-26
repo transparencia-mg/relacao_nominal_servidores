@@ -28,24 +28,22 @@ jobs:
       # 2️⃣ Preparar conteúdo do Pages
       
   	run: |
-    	echo "🧹 Limpando pasta docs/"
-    	rm -rf docs
-    	mkdir docs
+    echo "🧹 Limpando pasta docs/"
+    rm -rf docs
+    mkdir docs
 
-    	echo "📄 Copiando site de dashboards"
-    	cp pages/index.html docs/
-    	cp pages/app.js docs/
-    	cp pages/style.css docs/
+    echo "📄 Copiando HTML de dashboard"
+    cp pages/index.html docs/index.html
 
-    	echo "📊 Copiando CSVs derivados"
-    	mkdir docs/data
-    	cp data/*.csv docs/data/
+    echo "📊 Copiando CSVs"
+    mkdir docs/data
+    cp data/*.csv docs/data/
 
-    	echo "📦 Copiando datapackage.json"
-   	cp datapackage/datapackage.json docs/datapackage.json
+    echo "📦 Copiando datapackage.json"
+    cp datapackage/datapackage.json docs/datapackage.json
 
-   	echo "📂 Conteúdo final do docs/:"
-   	ls -R docs
+    echo "📂 Conteúdo final publicado:"
+    ls -R docs
 
 
       # 3️⃣ Validação mínima
