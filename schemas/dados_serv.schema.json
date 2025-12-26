@@ -1,17 +1,34 @@
 {
   "fields": [
-    { "name": "ano_mes", "type": "string" },
-    { "name": "masp", "type": "string" },
-    { "name": "adm", "type": "string" },
-    { "name": "nome", "type": "string" },
-    { "name": "siglaefetivo", "type": "string" },
-    { "name": "nmefetivo", "type": "string" },
-    { "name": "cdcomi", "type": "string" },
-    { "name": "desccomi", "type": "string" },
-    { "name": "cd_funcao_gratif_gte", "type": "string" },
-    { "name": "desc_funcao_gratif_gte", "type": "string" },
-    { "name": "carga_horaria", "type": "string" },
-    { "name": "descsitserv", "type": "string" }
+    { "name": "ano_mes", "type": "string", "description": "Ano e mês de referência (YYYYMM)" },
+    { "name": "masp", "type": "string", "description": "Matrícula do servidor" },
+    { "name": "adm", "type": "string", "description": "Código de admissão" },
+    { "name": "nome", "type": "string", "description": "Nome completo do servidor" },
+
+    { "name": "siglaefetivo", "type": "string", "description": "Sigla do cargo efetivo" },
+    { "name": "nmefetivo", "type": "string", "description": "Nome do cargo efetivo" },
+
+    { "name": "cdcomi", "type": "string", "description": "Código de cargo em comissão" },
+    { "name": "desccomi", "type": "string", "description": "Descrição do cargo em comissão" },
+
+    { "name": "cd_funcao_gratif_gte", "type": "string", "description": "Código da função gratificada" },
+    { "name": "desc_funcao_gratif_gte", "type": "string", "description": "Descrição da função gratificada" },
+
+    { "name": "carga_horaria", "type": "string", "description": "Carga horária semanal" },
+
+    { "name": "cd_instituicao_dotacao", "type": "string", "description": "Código da instituição de dotação" },
+    { "name": "sigla_instituicao_dotacao", "type": "string", "description": "Sigla da instituição de dotação" },
+    { "name": "desc_instituicao_dotacao", "type": "string", "description": "Descrição da instituição de dotação" },
+
+    { "name": "cd_instituicao_lotacao", "type": "string", "description": "Código da instituição de lotação" },
+    { "name": "sigla_instituicao_lotacao", "type": "string", "description": "Sigla da instituição de lotação" },
+    { "name": "desc_instituicao_lotacao", "type": "string", "description": "Descrição da instituição de lotação" },
+
+    { "name": "descsitserv", "type": "string", "description": "Situação funcional do servidor" },
+
+    { "name": "data_inicio", "type": "string", "description": "Data de início do vínculo" },
+    { "name": "data_aposentadoria", "type": "string", "description": "Data de aposentadoria, se houver" },
+    { "name": "data_desligamento", "type": "string", "description": "Data de desligamento, se houver" }
   ],
   "missingValues": [""]
 }
