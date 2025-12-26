@@ -27,23 +27,23 @@ jobs:
 
       # 2️⃣ Preparar conteúdo do Pages
       - name: 🧱 Preparar conteúdo do Pages
-        run: |
-          echo "🧹 Limpando pasta docs/"
-          rm -rf docs
-          mkdir docs
+  run: |
+    echo "🧹 Limpando pasta docs/"
+    rm -rf docs
+    mkdir docs
 
-          echo "📄 Copiando dashboard (pages/index.html)"
-          cp pages/index.html docs/index.html
+    echo "📄 Copiando dashboard"
+    cp -r pages/* docs/
 
-          echo "📦 Copiando datapackage.json"
-          if [ ! -f datapackage/datapackage.json ]; then
-            echo "❌ datapackage/datapackage.json não encontrado"
-            exit 1
-          fi
-          cp datapackage/datapackage.json docs/datapackage.json
+    echo "🚫 Desativando Jekyll"
+    cp .nojekyll docs/.nojekyll
 
-          echo "📂 Conteúdo final do docs/"
-          ls -lah docs
+    echo "📦 Copiando datapackage.json"
+    cp datapackage/datapackage.json docs/datapackage.json
+
+    echo "📂 Conteúdo final do docs/"
+    ls -R docs
+
 
       # 3️⃣ Upload do artefato
       - name: 📦 Upload artefato Pages
