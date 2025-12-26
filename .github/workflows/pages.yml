@@ -31,7 +31,7 @@ jobs:
           mkdir docs
 
           echo "📄 Copiando dashboard"
-          cp -r docs/* docs/
+          cp -r src/* docs/
 
           echo "📦 (Opcional) Copiando datapackage.json"
           if [ -f datapackage/datapackage.json ]; then
