@@ -26,26 +26,27 @@ jobs:
         uses: actions/checkout@v4
 
       # 2️⃣ Preparar conteúdo do Pages
-      - name: 🧱 Preparar conteúdo do Pages
-        run: |
-          echo "🧹 Limpando pasta docs/"
-          rm -rf docs
-          mkdir docs
+      
+  	run: |
+    	echo "🧹 Limpando pasta docs/"
+    	rm -rf docs
+    	mkdir docs
 
-          echo "📄 Copiando site"
-          cp pages/index.html docs/
-          cp pages/app.js docs/ || true
-          cp pages/style.css docs/ || true
+    	echo "📄 Copiando site de dashboards"
+    	cp pages/index.html docs/
+    	cp pages/app.js docs/
+    	cp pages/style.css docs/
 
-          echo "📦 Copiando datapackage.json"
-          if [ ! -f datapackage/datapackage.json ]; then
-            echo "❌ datapackage/datapackage.json não encontrado"
-            exit 1
-          fi
-          cp datapackage/datapackage.json docs/datapackage.json
+    	echo "📊 Copiando CSVs derivados"
+    	mkdir docs/data
+    	cp data/*.csv docs/data/
 
-          echo "📂 Conteúdo final do docs/:"
-          ls -lah docs
+    	echo "📦 Copiando datapackage.json"
+   	cp datapackage/datapackage.json docs/datapackage.json
+
+   	echo "📂 Conteúdo final do docs/:"
+   	ls -R docs
+
 
       # 3️⃣ Validação mínima
       - name: 🧪 Validar Pages
