@@ -21,35 +21,37 @@ jobs:
       name: github-pages
 
     steps:
+      # 1️⃣ Checkout
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
-      - name: # 2️⃣ Preparar conteúdo do Pages
+      # 2️⃣ Preparar conteúdo do Pages
+      - name: 🧱 Preparar conteúdo do Pages
+        run: |
+          echo "🧹 Limpando pasta docs/"
+          rm -rf docs
+          mkdir docs
 
-  run: |
-    echo "🧹 Limpando pasta docs/"
-    rm -rf docs
-    mkdir docs
+          echo "📄 Copiando dashboard (pages/index.html)"
+          cp pages/index.html docs/index.html
 
-    echo "📄 Copiando dashboard"
-    cp -r pages/* docs/
+          echo "📦 Copiando datapackage.json"
+          if [ ! -f datapackage/datapackage.json ]; then
+            echo "❌ datapackage/datapackage.json não encontrado"
+            exit 1
+          fi
+          cp datapackage/datapackage.json docs/datapackage.json
 
-    echo "📦 Copiando datapackage.json"
-    if [ ! -f datapackage/datapackage.json ]; then
-      echo "❌ datapackage/datapackage.json não encontrado"
-      exit 1
-    fi
-    cp datapackage/datapackage.json docs/datapackage.json
+          echo "📂 Conteúdo final do docs/"
+          ls -lah docs
 
-    echo "📂 Conteúdo final do docs/"
-    ls -lah docs
-
-
+      # 3️⃣ Upload do artefato
       - name: 📦 Upload artefato Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs
 
+      # 4️⃣ Deploy
       - name: 🚀 Deploy no GitHub Pages
         uses: actions/deploy-pages@v4
 
