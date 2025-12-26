@@ -7,7 +7,7 @@ Gera datapackage.json para o dataset
 
 - Recursos já publicados no dados.mg.gov.br (CKAN)
 - Hash SHA-256 previamente calculado
-- Schema EMBUTIDO em cada resource (frictionless)
+- Schema Frictionless embutido
 - Nenhum CSV armazenado no GitHub
 """
 
@@ -26,7 +26,7 @@ HASHES_FILE = Path("datapackage/hashes.json")
 OUTPUT_FILE = Path("datapackage/datapackage.json")
 
 # ===============================
-# SCHEMA EMBUTIDO (dados_serv_YYYYMM.csv)
+# SCHEMA (dados_serv_YYYYMM.csv)
 # ===============================
 
 SCHEMA_DADOS_SERV = {
@@ -42,7 +42,13 @@ SCHEMA_DADOS_SERV = {
         {"name": "cd_funcao_gratif_gte", "type": "string"},
         {"name": "desc_funcao_gratif_gte", "type": "string"},
         {"name": "carga_horaria", "type": "string"},
-        {"name": "descsitserv", "type": "string"}
+        {"name": "cd_instituicao_lotacao", "type": "string"},
+        {"name": "sigla_instituicao_lotacao", "type": "string"},
+        {"name": "desc_instituicao_lotacao", "type": "string"},
+        {"name": "descsitserv", "type": "string"},
+        {"name": "data_inicio", "type": "string"},
+        {"name": "data_aposentadoria", "type": "string"},
+        {"name": "data_desligamento", "type": "string"}
     ],
     "missingValues": [""]
 }
@@ -84,23 +90,24 @@ def main():
         if not name or not download_url:
             continue
 
-        # Ignora arquivos que não são CSV de servidores
         if not name.startswith("dados_serv_") or not name.endswith(".csv"):
             print(f"⏭️ Ignorado: {name}")
             continue
 
         hash_value = hashes.get(name)
-
         if not hash_value:
             print(f"⚠️ Hash não encontrado para {name}")
             continue
 
+        ano_mes = name.replace("dados_serv_", "").replace(".csv", "")
+
         resource = {
-            "name": name.replace(".csv", ""),
-            "title": f"Relação Nominal de Servidores – {name[-10:-4]}",
+            "name": name,
+            "title": f"Relação Nominal de Servidores – {ano_mes}",
             "format": "csv",
             "mediatype": "text/csv",
-            "path": download_url,
+            "path": name,
+            "url": download_url,
             "hash": hash_value,
             "schema": SCHEMA_DADOS_SERV
         }
@@ -121,10 +128,12 @@ def main():
         encoding="utf-8"
     )
 
-    print(f"🎉 datapackage.json gerado em {OUTPUT_FILE}")
+    print(f"\n🎉 datapackage.json gerado em {OUTPUT_FILE}")
     print(f"📊 Total de recursos: {len(resources)}")
 
 
 if __name__ == "__main__":
     main()
+
+
 
