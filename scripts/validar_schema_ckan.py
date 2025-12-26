@@ -2,14 +2,23 @@
 # -*- coding: utf-8 -*-
 
 """
-Valida TODOS os arquivos do dataset no dados.mg
+Valida os arquivos do dataset no dados.mg
 contra schemas Frictionless.
-Se algum falhar → erro (workflow para).
+
+- Validação direta via URL (CKAN)
+- Fail-fast (CI/CD)
+- Seguro para CSVs grandes (limit_rows)
 """
 
 import requests
 import sys
+import re
+from pathlib import Path
 from frictionless import validate
+
+# ===============================
+# CONFIGURAÇÕES
+# ===============================
 
 CKAN_HOST = "https://dados.mg.gov.br"
 DATASET_NAME = "relacao_nominal_servidores"
@@ -19,16 +28,49 @@ HEADERS = {
     "Accept": "application/json"
 }
 
-SCHEMA_MAP = {
-    "dados_serv": "schemas/dados_serv.schema.json",
-    "dm_tempo_diario": "schemas/dm_tempo_diario.schema.json"
-}
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+SCHEMA_DADOS_SERV = BASE_DIR / "schemas" / "dados_serv.schema.json"
+
+# ===============================
+# FUNÇÕES AUXILIARES
+# ===============================
 
 def get_resources():
     url = f"{CKAN_HOST}/api/3/action/package_show"
-    r = requests.get(url, params={"id": DATASET_NAME}, headers=HEADERS)
+    r = requests.get(
+        url,
+        params={"id": DATASET_NAME},
+        headers=HEADERS,
+        timeout=30
+    )
     r.raise_for_status()
     return r.json()["result"]["resources"]
+
+
+def validar_recurso(nome, url, schema_path):
+    print(f"📄 Validando {nome}")
+
+    report = validate(
+        url,
+        schema=schema_path,
+        limit_rows=1000,   # 🔑 essencial para CSVs grandes
+        timeout=300
+    )
+
+    if not report.valid:
+        print("❌ ERRO DE SCHEMA")
+        for e in report.flatten(["rowPosition", "fieldName", "message"]):
+            print("   ", e)
+        return False
+
+    print("✅ OK")
+    return True
+
+
+# ===============================
+# MAIN
+# ===============================
 
 def main():
     print("🔎 Buscando resources no CKAN")
@@ -40,33 +82,23 @@ def main():
         nome = r.get("name", "")
         url = r.get("url")
 
-        if not url:
+        if not nome or not url:
             continue
 
-        schema = None
-        for prefixo, schema_path in SCHEMA_MAP.items():
-            if nome.startswith(prefixo):
-                schema = schema_path
-
-        if not schema:
-            print(f"⏭️ Ignorado (sem schema): {nome}")
-            continue
-
-        print(f"📄 Validando {nome}")
-        report = validate(url, schema=schema)
-
-        if not report.valid:
-            erros += 1
-            print("❌ ERRO DE SCHEMA")
-            for e in report.flatten(["rowPosition", "fieldName", "message"]):
-                print("   ", e)
+        # Valida apenas dados_serv_YYYYMM.csv
+        if re.match(r"^dados_serv_\d{6}\.csv$", nome):
+            if not validar_recurso(nome, url, SCHEMA_DADOS_SERV):
+                erros += 1
         else:
-            print("✅ OK")
+            print(f"⏭️ Ignorado (fora do escopo): {nome}")
 
     if erros > 0:
-        sys.exit(f"❌ {erros} arquivo(s) com erro de schema")
+        sys.exit(f"\n❌ {erros} arquivo(s) com erro de schema")
 
-    print("🎉 Todos os arquivos válidos")
+    print("\n🎉 Todos os arquivos válidos")
+
 
 if __name__ == "__main__":
     main()
+
+
