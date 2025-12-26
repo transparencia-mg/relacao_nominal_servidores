@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="/relacao_nominal_servidores/app.js"></script>
 
     <style>
         /* ==================== VARIÁVEIS DE CORES ==================== */
@@ -928,14 +927,8 @@
                         <h1 class="header-title">Relação Nominal de Servidores</h1>
                         <p class="header-subtitle">Governo do Estado de Minas Gerais - Servidores do Poder Executivo</p>
                         <div class="header-info">
-                            <a href="https://dados.mg.gov.br/dataset/relacao_nominal_servidores" target="_blank" class="link-legislacao">
-                                <i class="fas fa-external-link-alt"></i> Portal de Dados Abertos MG
-                            </a>
-                            <a href="https://github.com/transparencia-mg/relacao_nominal_servidores" target="_blank" class="link-legislacao">
-                                <i class="fab fa-github"></i> Repositório GitHub
-                            </a>
                             <span class="badge-atualizacao-header">
-                                <i class="fas fa-sync-alt"></i> Última atualização: <span id="data-atualizacao-header">Carregando...</span>
+                                <i class="fas fa-sync-alt"></i> Fonte: CSV do PostgreSQL
                             </span>
                         </div>
                     </div>
@@ -944,9 +937,9 @@
                 <!-- Informação de Fonte de Dados -->
                 <div class="text-end">
                     <div class="btn-export" style="background: rgba(255, 255, 255, 0.2); color: white; border-color: white;">
-                        <i class="fas fa-database me-2"></i> Fonte: CKAN API
+                        <i class="fas fa-database me-2"></i> Fonte: PostgreSQL CSV
                     </div>
-                    <small class="text-white d-block mt-1" style="font-size: 10px;">Atualização automática</small>
+                    <small class="text-white d-block mt-1" style="font-size: 10px;">Arquivo: <span id="arquivoAtual">dados_serv_202411.csv</span></small>
                 </div>
             </div>
         </div>
@@ -986,17 +979,30 @@
                     <div class="row">
                         <div class="col-md-3 col-6">
                             <div class="mb-3">
-                                <label for="anoDashboard1" class="form-label filter-label">Ano</label>
-                                <select class="form-select" id="anoDashboard1">
-                                    <!-- Opções serão carregadas dinamicamente -->
+                                <label for="anoSelect" class="form-label filter-label">Ano</label>
+                                <select class="form-select" id="anoSelect">
+                                    <option value="2025">2025</option>
+                                    <option value="2024" selected>2024</option>
+                                    <option value="2023">2023</option>
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-3 col-6">
                             <div class="mb-3">
-                                <label for="mesDashboard1" class="form-label filter-label">Mês</label>
-                                <select class="form-select" id="mesDashboard1">
-                                    <!-- Opções serão carregadas dinamicamente -->
+                                <label for="mesSelect" class="form-label filter-label">Mês</label>
+                                <select class="form-select" id="mesSelect">
+                                    <option value="01">Janeiro</option>
+                                    <option value="02">Fevereiro</option>
+                                    <option value="03">Março</option>
+                                    <option value="04">Abril</option>
+                                    <option value="05">Maio</option>
+                                    <option value="06">Junho</option>
+                                    <option value="07">Julho</option>
+                                    <option value="08">Agosto</option>
+                                    <option value="09">Setembro</option>
+                                    <option value="10">Outubro</option>
+                                    <option value="11" selected>Novembro</option>
+                                    <option value="12">Dezembro</option>
                                 </select>
                             </div>
                         </div>
@@ -1013,8 +1019,8 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="d-flex gap-3 flex-wrap">
-                                <button class="btn-primary-custom" id="aplicarFiltros">
-                                    <i class="fas fa-filter me-2"></i>Pesquisar
+                                <button class="btn-primary-custom" id="carregarDados">
+                                    <i class="fas fa-search me-2"></i>Carregar Dados
                                 </button>
                                 <button class="btn-secondary-custom" id="limparFiltros">
                                     <i class="fas fa-redo me-2"></i>Limpar Filtros
@@ -1140,7 +1146,9 @@
                             <div class="mb-3">
                                 <label for="anoDashboard2" class="form-label filter-label">Ano</label>
                                 <select class="form-select" id="anoDashboard2">
-                                    <!-- Opções serão carregadas dinamicamente -->
+                                    <option value="2025">2025</option>
+                                    <option value="2024" selected>2024</option>
+                                    <option value="2023">2023</option>
                                 </select>
                             </div>
                         </div>
@@ -1148,7 +1156,18 @@
                             <div class="mb-3">
                                 <label for="mesDashboard2" class="form-label filter-label">Mês Referência</label>
                                 <select class="form-select" id="mesDashboard2">
-                                    <!-- Opções serão carregadas dinamicamente -->
+                                    <option value="01">Janeiro</option>
+                                    <option value="02">Fevereiro</option>
+                                    <option value="03">Março</option>
+                                    <option value="04">Abril</option>
+                                    <option value="05">Maio</option>
+                                    <option value="06">Junho</option>
+                                    <option value="07">Julho</option>
+                                    <option value="08">Agosto</option>
+                                    <option value="09">Setembro</option>
+                                    <option value="10">Outubro</option>
+                                    <option value="11" selected>Novembro</option>
+                                    <option value="12">Dezembro</option>
                                 </select>
                             </div>
                         </div>
@@ -1292,7 +1311,9 @@
                                 <label for="anoDownload" class="form-label filter-label">Selecione o Ano</label>
                                 <select class="form-select" id="anoDownload">
                                     <option value="">Selecione um ano...</option>
-                                    <!-- Opções serão carregadas dinamicamente -->
+                                    <option value="2025">2025</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2023">2023</option>
                                 </select>
                             </div>
                         </div>
@@ -1301,7 +1322,18 @@
                                 <label for="mesDownload" class="form-label filter-label">Selecione o Mês</label>
                                 <select class="form-select" id="mesDownload">
                                     <option value="">Selecione um mês...</option>
-                                    <!-- Opções serão carregadas dinamicamente -->
+                                    <option value="01">Janeiro</option>
+                                    <option value="02">Fevereiro</option>
+                                    <option value="03">Março</option>
+                                    <option value="04">Abril</option>
+                                    <option value="05">Maio</option>
+                                    <option value="06">Junho</option>
+                                    <option value="07">Julho</option>
+                                    <option value="08">Agosto</option>
+                                    <option value="09">Setembro</option>
+                                    <option value="10">Outubro</option>
+                                    <option value="11">Novembro</option>
+                                    <option value="12">Dezembro</option>
                                 </select>
                             </div>
                         </div>
@@ -1324,27 +1356,23 @@
                                 <div class="card-stats">
                                     <i class="fas fa-database fa-3x mb-3" style="color: var(--primary-dark);"></i>
                                     <h4>Fonte dos Dados</h4>
-                                    <p class="text-muted" style="font-size: 13px;">Dados da Relação Nominal de Servidores do Poder Executivo de MG</p>
+                                    <p class="text-muted" style="font-size: 13px;">Dados exportados do PostgreSQL do Poder Executivo de MG</p>
                                     <div class="mt-3">
-                                        <a href="https://dados.mg.gov.br/dataset/relacao_nominal_servidores" 
-                                           target="_blank" 
-                                           class="btn-export w-100 d-block text-decoration-none">
-                                            <i class="fas fa-external-link-alt me-2"></i>Acessar Portal de Dados
-                                        </a>
+                                        <button class="btn-export w-100" onclick="carregarDadosAtuais()">
+                                            <i class="fas fa-sync-alt me-2"></i>Carregar Dados Atuais
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-6 col-12">
                                 <div class="card-stats">
-                                    <i class="fab fa-github fa-3x mb-3" style="color: var(--primary-dark);"></i>
-                                    <h4>Repositório GitHub</h4>
-                                    <p class="text-muted" style="font-size: 13px;">Acesse o código-fonte e dados no GitHub</p>
+                                    <i class="fas fa-file-csv fa-3x mb-3" style="color: var(--primary-dark);"></i>
+                                    <h4>Arquivos CSV</h4>
+                                    <p class="text-muted" style="font-size: 13px;">Dados disponíveis por mês/ano no formato CSV</p>
                                     <div class="mt-3">
-                                        <a href="https://github.com/transparencia-mg/relacao_nominal_servidores" 
-                                           target="_blank" 
-                                           class="btn-export w-100 d-block text-decoration-none">
-                                            <i class="fab fa-github me-2"></i>Acessar Repositório
-                                        </a>
+                                        <button class="btn-export w-100" id="verArquivosCSV">
+                                            <i class="fas fa-folder-open me-2"></i>Ver Arquivos Disponíveis
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -1418,13 +1446,13 @@
                             
                             <div class="alert alert-info mt-3">
                                 <i class="fas fa-info-circle me-2"></i>
-                                <strong>Fonte dos Dados:</strong> Os dados são carregados da API CKAN do Portal de Dados Abertos de Minas Gerais. 
-                                Cada arquivo CSV representa um mês específico (ex: dados_serv_202501.csv para Janeiro/2025).
+                                <strong>Fonte dos Dados:</strong> Os dados são carregados de arquivos CSV exportados do banco de dados PostgreSQL. 
+                                Cada arquivo CSV representa um mês específico (ex: dados_serv_202411.csv para Novembro/2024).
                             </div>
                             
                             <div class="alert alert-success mt-2">
-                                <i class="fas fa-sync-alt me-2"></i>
-                                <strong>Atualização Automática:</strong> Os dados são atualizados mensalmente com as novas relações de servidores.
+                                <i class="fas fa-database me-2"></i>
+                                <strong>Estrutura:</strong> Os arquivos CSV estão organizados na pasta <code>data/</code> com o formato <code>dados_serv_YYYYMM.csv</code>
                             </div>
                         </div>
                     </div>
@@ -1438,22 +1466,15 @@
     <footer class="footer mt-4 pt-4 border-top">
         <div class="container text-center text-muted">
             <p class="mb-1">
-                <i class="fas fa-sync-alt me-2"></i> 
-                Data de Atualização — 
-                <span id="footer-atualizacao">Carregando...</span>
+                <i class="fas fa-database me-2"></i> 
+                Fonte: PostgreSQL CSV — 
+                Arquivo atual: <span id="arquivoFooter">dados_serv_202411.csv</span>
             </p>
             <p class="mb-0" style="font-size: 0.85rem;">
                 © 2025 Relação Nominal de Servidores - Governo do Estado de Minas Gerais
             </p>
             <p class="mt-2 mb-0 small">
-                <a href="https://dados.mg.gov.br" style="color: var(--primary-dark); text-decoration: none; font-weight: 600;">
-                    <i class="fas fa-external-link-alt"></i> dados.mg.gov.br
-                </a>
-                | 
-                <a href="https://github.com/transparencia-mg/relacao_nominal_servidores" 
-                   style="color: var(--primary-dark); text-decoration: none; font-weight: 600;">
-                    <i class="fab fa-github"></i> GitHub
-                </a>
+                Dados exportados do banco PostgreSQL | Dashboard CSVs
             </p>
         </div>
     </footer>
@@ -1531,8 +1552,8 @@
         let itemsPerPageDashboard2 = 50;
 
         let charts = {};
-        let currentYear = '';
-        let currentMonth = '';
+        let currentYear = '2024';
+        let currentMonth = '11';
 
         let currentSortDashboard1 = { column: 'desc_instituicao', order: 'asc' };
         let currentSortDashboard2 = { column: 'nome', order: 'asc' };
@@ -1567,178 +1588,122 @@
         };
 
         // ============================================
-        // DATAPACKAGE (GitHub Pages)
-        // ============================================
-        const DATAPACKAGE_URL = 'https://transparencia-mg.github.io/relacao-nominal-servidores/datapackage.json';
-
-        // ============================================
         // INICIALIZAÇÃO
         // ============================================
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('=== INICIANDO DASHBOARD SERVIDORES ===');
-            showLoading(true);
-
-            try {
-                // Carregar datapackage
-                const dp = await carregarDatapackage();
-                
-                // Indexar recursos por mês
-                const recursosPorMes = indexarRecursos(dp);
-                console.log('Meses disponíveis:', Object.keys(recursosPorMes));
-
-                // Encontrar o mês mais recente
-                const mesesDisponiveis = Object.keys(recursosPorMes).sort();
-                const mesMaisRecente = mesesDisponiveis[mesesDisponiveis.length - 1];
-                
-                if (!mesMaisRecente) {
-                    throw new Error('Nenhum mês disponível no datapackage');
-                }
-
-                currentYear = mesMaisRecente.substring(0, 4);
-                currentMonth = mesMaisRecente.substring(4, 6);
-
-                console.log(`Mês mais recente: ${currentYear}-${currentMonth}`);
-
-                // Carregar o mês mais recente
-                await carregarMes(mesMaisRecente, recursosPorMes);
-
-                updateDataAtualizacao();
-                updateFilterOptions();
-                updateDashboard1();
-                initializeDashboard2();
-                updateDashboard3();
-                setupEventListeners();
-
-                console.log('Dashboard carregado com sucesso!');
-            } catch (e) {
-                console.error('Erro ao inicializar:', e);
-                showError('Erro ao carregar dados. Por favor, tente novamente.');
-            } finally {
-                showLoading(false);
-            }
+            console.log('=== INICIANDO DASHBOARD SERVIDORES (CSV PostgreSQL) ===');
+            
+            // Carregar dados iniciais
+            await carregarDadosCSV(currentYear, currentMonth);
+            
+            // Configurar listeners
+            setupEventListeners();
+            
+            console.log('Dashboard carregado com sucesso!');
         });
 
         // ============================================
-        // FUNÇÕES DO DATAPACKAGE
+        // CARREGAR DADOS DO CSV
         // ============================================
-        async function carregarDatapackage() {
-            const resp = await fetch(DATAPACKAGE_URL);
-            if (!resp.ok) {
-                throw new Error('Erro ao carregar datapackage.json');
-            }
-            return await resp.json();
-        }
-
-        function indexarRecursos(dp) {
-            const mapa = {};
-
-            if (!dp || !Array.isArray(dp.resources)) {
-                console.error('Datapackage inválido ou sem resources');
-                return mapa;
-            }
-
-            dp.resources.forEach(r => {
-                if (!r.name) return;
-
-                const match = r.name.match(/dados_serv_(\d{6})/);
-                if (match) {
-                    mapa[match[1]] = {
-                        url: r.url,
-                        hash: r.hash
-                    };
+        async function carregarDadosCSV(ano, mes) {
+            showLoading(true);
+            
+            try {
+                const arquivo = `data/dados_serv_${ano}${mes}.csv`;
+                console.log(`Carregando CSV: ${arquivo}`);
+                
+                // Atualizar informações do arquivo
+                document.getElementById('arquivoAtual').textContent = `dados_serv_${ano}${mes}.csv`;
+                document.getElementById('arquivoFooter').textContent = `dados_serv_${ano}${mes}.csv`;
+                
+                // Parse do CSV
+                const dados = await parseCSV(arquivo);
+                
+                if (dados && dados.length > 0) {
+                    // Processar dados
+                    servidoresData = dados.map(row => ({
+                        ano_mes: row.ano_mes || '',
+                        masp: row.masp || '',
+                        adm: row.adm || '',
+                        nome: row.nome || '',
+                        siglaefetivo: row.siglaefetivo || '',
+                        nmefetivo: row.nmefetivo || '',
+                        cdcomi: row.cdcomi || '',
+                        desccomi: row.desccomi || '',
+                        cd_funcao_gratif_gte: row.cd_funcao_gratif_gte || '',
+                        desc_funcao_gratif_gte: row.desc_funcao_gratif_gte || '',
+                        carga_horaria: parseInt(row.carga_horaria) || 0,
+                        cd_instituicao_dotacao: row.cd_instituicao_dotacao || '',
+                        sigla_instituicao_dotacao: row.sigla_instituicao_dotacao || '',
+                        desc_instituicao_dotacao: row.desc_instituicao_dotacao || '',
+                        cd_instituicao_lotacao: row.cd_instituicao_lotacao || '',
+                        sigla_instituicao_lotacao: row.sigla_instituicao_lotacao || '',
+                        desc_instituicao_lotacao: row.desc_instituicao_lotacao || '',
+                        descsitserv: row.descsitserv || '',
+                        id_data_inicio: row.id_data_inicio || row.data_inicio || '',
+                        id_data_aposentadoria: row.id_data_aposentadoria || row.data_aposentadoria || '',
+                        id_data_desligamento: row.id_data_desligamento || row.data_desligamento || '',
+                        ANO: ano,
+                        MES_NUM: mes,
+                        COMPETENCIA: `${ano}-${mes}`,
+                        MES_REFERENCIA: `${monthNames[mes]}/${ano}`
+                    }));
+                    
+                    filteredData = [...servidoresData];
+                    
+                    console.log(`Dados carregados: ${servidoresData.length} registros`);
+                    
+                    // Atualizar dashboards
+                    updateDashboard1();
+                    updateDashboard2();
+                    updateFilterOptions();
+                } else {
+                    console.warn('Nenhum dado encontrado no CSV');
+                    filteredData = [];
+                    servidoresData = [];
+                    
+                    // Limpar dashboards
+                    document.getElementById('summaryCards').innerHTML = '<div class="col-12 text-center"><p class="text-muted">Nenhum dado encontrado.</p></div>';
+                    document.getElementById('resumoTableBody').innerHTML = '<tr><td colspan="3" class="text-center text-muted">Nenhum dado encontrado.</td></tr>';
+                    document.getElementById('servidoresTableBody').innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nenhum servidor encontrado.</td></tr>';
                 }
-            });
-
-            return mapa;
+                
+            } catch (error) {
+                console.error('Erro ao carregar CSV:', error);
+                showError('Erro ao carregar dados do arquivo CSV.');
+                
+                // Limpar dashboards em caso de erro
+                filteredData = [];
+                servidoresData = [];
+                document.getElementById('summaryCards').innerHTML = '<div class="col-12 text-center"><p class="text-muted">Erro ao carregar dados.</p></div>';
+                document.getElementById('resumoTableBody').innerHTML = '<tr><td colspan="3" class="text-center text-muted">Erro ao carregar dados.</td></tr>';
+                document.getElementById('servidoresTableBody').innerHTML = '<tr><td colspan="7" class="text-center text-muted">Erro ao carregar dados.</td></tr>';
+            } finally {
+                showLoading(false);
+            }
         }
 
-        async function carregarMes(key, recursosPorMes) {
-            const recurso = recursosPorMes[key];
-            if (!recurso) {
-                throw new Error(`Mês ${key} não disponível`);
-            }
-
-            console.log('Carregando CSV:', recurso.url);
-
+        // ============================================
+        // FUNÇÃO PARA PARSE DE CSV
+        // ============================================
+        function parseCSV(url) {
             return new Promise((resolve, reject) => {
-                Papa.parse(recurso.url, {
+                Papa.parse(url, {
                     download: true,
                     header: true,
+                    delimiter: ';',
                     skipEmptyLines: true,
                     encoding: 'UTF-8',
-                    complete: function (results) {
-                        const year = key.substring(0, 4);
-                        const month = key.substring(4, 6);
-
-                        const data = results.data.map(row => ({
-                            ano_mes: row.ano_mes || '',
-                            masp: row.masp || '',
-                            adm: row.adm || '',
-                            nome: row.nome || '',
-                            siglaefetivo: row.siglaefetivo || '',
-                            nmefetivo: row.nmefetivo || '',
-                            cdcomi: row.cdcomi || '',
-                            desccomi: row.desccomi || '',
-                            cd_funcao_gratif_gte: row.cd_funcao_gratif_gte || '',
-                            desc_funcao_gratif_gte: row.desc_funcao_gratif_gte || '',
-                            carga_horaria: parseInt(row.carga_horaria) || 0,
-                            cd_instituicao_dotacao: row.cd_instituicao_dotacao || '',
-                            sigla_instituicao_dotacao: row.sigla_instituicao_dotacao || '',
-                            desc_instituicao_dotacao: row.desc_instituicao_dotacao || '',
-                            cd_instituicao_lotacao: row.cd_instituicao_lotacao || '',
-                            sigla_instituicao_lotacao: row.sigla_instituicao_lotacao || '',
-                            desc_instituicao_lotacao: row.desc_instituicao_lotacao || '',
-                            descsitserv: row.descsitserv || '',
-                            id_data_inicio: row.id_data_inicio || row.data_inicio || '',
-                            id_data_aposentadoria: row.id_data_aposentadoria || row.data_aposentadoria || '',
-                            id_data_desligamento: row.id_data_desligamento || row.data_desligamento || '',
-                            ANO: year,
-                            MES_NUM: month,
-                            COMPETENCIA: `${year}-${month}`,
-                            MES_REFERENCIA: `${monthNames[month]}/${year}`
-                        }));
-
-                        allData[key] = data;
-                        servidoresData = data;
-                        filteredData = data;
-
-                        console.log(`Dados ${key} carregados: ${data.length} registros`);
-                        resolve(data);
+                    complete: function(results) {
+                        console.log(`CSV parseado: ${results.data.length} registros`);
+                        resolve(results.data);
                     },
-                    error: function (err) {
-                        console.error(`Erro no parse do CSV ${key}:`, err);
-                        reject(err);
+                    error: function(error) {
+                        console.error('Erro no parse do CSV:', error);
+                        reject(error);
                     }
                 });
             });
-        }
-
-        async function carregarMesPorAnoMes(ano, mes) {
-            const key = `${ano}${mes.padStart(2, '0')}`;
-            
-            // Verificar se já temos os dados carregados
-            if (allData[key]) {
-                servidoresData = allData[key];
-                filteredData = servidoresData;
-                return;
-            }
-
-            // Carregar datapackage novamente para garantir que temos os recursos atualizados
-            try {
-                const dp = await carregarDatapackage();
-                const recursosPorMes = indexarRecursos(dp);
-                
-                if (recursosPorMes[key]) {
-                    await carregarMes(key, recursosPorMes);
-                    currentYear = ano;
-                    currentMonth = mes.padStart(2, '0');
-                } else {
-                    throw new Error(`Mês ${mes}/${ano} não disponível`);
-                }
-            } catch (error) {
-                console.error(`Erro ao carregar mês ${mes}/${ano}:`, error);
-                throw error;
-            }
         }
 
         // ============================================
@@ -1761,101 +1726,14 @@
             container.prepend(errorDiv);
         }
 
-        function updateDataAtualizacao() {
-            const now = new Date();
-            const dataFormatada = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR');
-            document.getElementById('data-atualizacao-header').textContent = dataFormatada;
-            document.getElementById('footer-atualizacao').textContent = dataFormatada;
-        }
-
         // ============================================
         // FUNÇÕES DE FILTRO
         // ============================================
         function updateFilterOptions() {
-            // Obter todos os meses disponíveis do datapackage
-            const mesesDisponiveis = Object.keys(allData);
-            const anosUnicos = [...new Set(mesesDisponiveis.map(m => m.substring(0, 4)))].sort();
-            const mesesPorAno = {};
+            if (!servidoresData || servidoresData.length === 0) return;
             
-            anosUnicos.forEach(ano => {
-                mesesPorAno[ano] = mesesDisponiveis
-                    .filter(m => m.startsWith(ano))
-                    .map(m => m.substring(4, 6))
-                    .sort();
-            });
-
-            // Dashboard 1 - Ano
-            const anoSelect1 = document.getElementById('anoDashboard1');
-            if (anoSelect1) {
-                anoSelect1.innerHTML = '';
-                anosUnicos.forEach(ano => {
-                    const option = document.createElement('option');
-                    option.value = ano;
-                    option.textContent = ano;
-                    if (ano === currentYear) option.selected = true;
-                    anoSelect1.appendChild(option);
-                });
-            }
-            
-            // Dashboard 1 - Mês
-            const mesSelect1 = document.getElementById('mesDashboard1');
-            if (mesSelect1 && currentYear && mesesPorAno[currentYear]) {
-                mesSelect1.innerHTML = '';
-                mesesPorAno[currentYear].forEach(mesNum => {
-                    const option = document.createElement('option');
-                    option.value = mesNum;
-                    option.textContent = monthNames[mesNum] || mesNum;
-                    if (mesNum === currentMonth) option.selected = true;
-                    mesSelect1.appendChild(option);
-                });
-            }
-            
-            // Dashboard 2 - Ano
-            const anoSelect2 = document.getElementById('anoDashboard2');
-            if (anoSelect2) {
-                anoSelect2.innerHTML = '';
-                anosUnicos.forEach(ano => {
-                    const option = document.createElement('option');
-                    option.value = ano;
-                    option.textContent = ano;
-                    if (ano === currentYear) option.selected = true;
-                    anoSelect2.appendChild(option);
-                });
-            }
-            
-            // Dashboard 2 - Mês
-            const mesSelect2 = document.getElementById('mesDashboard2');
-            if (mesSelect2 && currentYear && mesesPorAno[currentYear]) {
-                mesSelect2.innerHTML = '';
-                mesesPorAno[currentYear].forEach(mesNum => {
-                    const option = document.createElement('option');
-                    option.value = mesNum;
-                    option.textContent = monthNames[mesNum] || mesNum;
-                    if (mesNum === currentMonth) option.selected = true;
-                    mesSelect2.appendChild(option);
-                });
-            }
-            
-            // Dashboard 3 - Download: Ano
-            const anoDownload = document.getElementById('anoDownload');
-            if (anoDownload) {
-                anoDownload.innerHTML = '<option value="">Selecione um ano...</option>';
-                anosUnicos.forEach(ano => {
-                    const option = document.createElement('option');
-                    option.value = ano;
-                    option.textContent = ano;
-                    anoDownload.appendChild(option);
-                });
-            }
-            
-            // Dashboard 3 - Download: Mês (será atualizado quando selecionar o ano)
-            const mesDownload = document.getElementById('mesDownload');
-            if (mesDownload) {
-                mesDownload.innerHTML = '<option value="">Selecione um mês...</option>';
-            }
-            
-            // Obter todas as instituições únicas do período atual
-            const instituicoesUnicas = [...new Set(filteredData.map(e => e.desc_instituicao_lotacao))].filter(Boolean).sort();
+            // Obter todas as instituições únicas
+            const instituicoesUnicas = [...new Set(servidoresData.map(e => e.desc_instituicao_lotacao))].filter(Boolean).sort();
             
             // Dashboard 1 - datalist de instituições
             const instituicaoDatalist1 = document.getElementById('instituicoesListDashboard1');
@@ -1883,8 +1761,8 @@
                 });
             }
             
-            // Obter todos os cargos únicos do período atual
-            const cargosUnicos = [...new Set(filteredData.map(e => e.nmefetivo))].filter(Boolean).sort();
+            // Obter todos os cargos únicos
+            const cargosUnicos = [...new Set(servidoresData.map(e => e.nmefetivo))].filter(Boolean).sort();
             
             // Dashboard 2 - datalist de cargos
             const cargoDatalist2 = document.getElementById('cargosListDashboard2');
@@ -1899,8 +1777,8 @@
                 });
             }
             
-            // Obter todas as situações únicas do período atual
-            const situacoesUnicas = [...new Set(filteredData.map(e => e.descsitserv))].filter(Boolean).sort();
+            // Obter todas as situações únicas
+            const situacoesUnicas = [...new Set(servidoresData.map(e => e.descsitserv))].filter(Boolean).sort();
             
             // Dashboard 2 - datalist de situações
             const situacaoDatalist2 = document.getElementById('situacoesListDashboard2');
@@ -1916,76 +1794,45 @@
             }
         }
 
-        function updateMesesDownload() {
-            const anoDownload = document.getElementById('anoDownload');
-            const mesDownload = document.getElementById('mesDownload');
-            
-            if (!anoDownload || !mesDownload) return;
-            
-            const anoSelecionado = anoDownload.value;
-            if (!anoSelecionado) {
-                mesDownload.innerHTML = '<option value="">Selecione um mês...</option>';
-                return;
-            }
-            
-            // Obter meses disponíveis para o ano selecionado
-            const mesesDisponiveis = Object.keys(allData)
-                .filter(key => key.startsWith(anoSelecionado))
-                .map(key => key.substring(4, 6))
-                .sort();
-            
-            mesDownload.innerHTML = '<option value="">Selecione um mês...</option>';
-            mesesDisponiveis.forEach(mesNum => {
-                const option = document.createElement('option');
-                option.value = mesNum;
-                option.textContent = monthNames[mesNum] || mesNum;
-                mesDownload.appendChild(option);
-            });
-        }
-
         // ============================================
         // CONFIGURAR EVENT LISTENERS
         // ============================================
         function setupEventListeners() {
-            // Filtros Dashboard 1
-            document.getElementById('aplicarFiltros').addEventListener('click', function() {
-                applyFilters('dashboard1');
-            });
-            document.getElementById('limparFiltros').addEventListener('click', function() {
-                clearAllFilters();
+            // Carregar dados principais
+            document.getElementById('carregarDados').addEventListener('click', function() {
+                const ano = document.getElementById('anoSelect').value;
+                const mes = document.getElementById('mesSelect').value;
+                carregarDadosCSV(ano, mes);
             });
             
-            // Dashboard 2
-            document.getElementById('pesquisarServidores').addEventListener('click', function() {
-                applyFilters('dashboard2');
+            // Dashboard 1 - Limpar filtros
+            document.getElementById('limparFiltros').addEventListener('click', function() {
+                document.getElementById('instituicaoDashboard1').value = '';
+                filteredData = [...servidoresData];
+                updateDashboard1();
             });
+            
+            // Dashboard 2 - Pesquisar
+            document.getElementById('pesquisarServidores').addEventListener('click', function() {
+                applyFiltersDashboard2();
+            });
+            
+            // Dashboard 2 - Limpar filtros
             document.getElementById('limparFiltrosDashboard2').addEventListener('click', function() {
                 clearDashboard2Filters();
             });
             
             // Exportação
             document.getElementById('exportCSVDashboard1').addEventListener('click', () => exportToCSV('dashboard1'));
-            document.getElementById('printDashboard1').addEventListener('click', () => printDashboard('dashboard1'));
-            
             document.getElementById('exportCSVDashboard2').addEventListener('click', () => exportToCSV('dashboard2'));
-            document.getElementById('printDashboard2').addEventListener('click', () => printDashboard('dashboard2'));
             
-            // Download na aba Downloads
+            // Download CSV
             document.getElementById('downloadMesCSV').addEventListener('click', downloadMesCSV);
-            document.getElementById('anoDownload').addEventListener('change', updateMesesDownload);
             
-            // Campo de busca na Consulta Individual
+            // Campo de busca
             document.getElementById('searchServidores').addEventListener('input', function(e) {
                 currentSearchTerm = e.target.value.toLowerCase();
                 filterServidoresTable(currentSearchTerm);
-            });
-            
-            // Troca de abas
-            document.getElementById('dashboard1-tab').addEventListener('click', function() {
-                setTimeout(updateDashboard1, 100);
-            });
-            document.getElementById('dashboard2-tab').addEventListener('click', function() {
-                setTimeout(updateDashboard2, 100);
             });
             
             // Itens por página
@@ -2001,229 +1848,60 @@
                 updateServidoresTable();
             });
             
-            // Mudança de ano/mês nos selects
-            document.getElementById('anoDashboard1').addEventListener('change', async function() {
-                const selectedYear = this.value;
-                const selectedMonth = document.getElementById('mesDashboard1').value;
-                await switchMonthData(selectedYear, selectedMonth);
+            // Ver arquivos CSV
+            document.getElementById('verArquivosCSV').addEventListener('click', function() {
+                alert('Arquivos CSV disponíveis na pasta data/:\n- dados_serv_202411.csv\n- dados_serv_202410.csv\n- dados_serv_202409.csv\n- etc...');
             });
             
-            document.getElementById('mesDashboard1').addEventListener('change', async function() {
-                const selectedMonth = this.value;
-                const selectedYear = document.getElementById('anoDashboard1').value;
-                await switchMonthData(selectedYear, selectedMonth);
-            });
-            
-            document.getElementById('anoDashboard2').addEventListener('change', async function() {
-                const selectedYear = this.value;
-                const selectedMonth = document.getElementById('mesDashboard2').value;
-                await switchMonthData(selectedYear, selectedMonth);
-            });
-            
-            document.getElementById('mesDashboard2').addEventListener('change', async function() {
-                const selectedMonth = this.value;
-                const selectedYear = document.getElementById('anoDashboard2').value;
-                await switchMonthData(selectedYear, selectedMonth);
-            });
+            // Carregar dados atuais
+            window.carregarDadosAtuais = function() {
+                const ano = document.getElementById('anoSelect').value;
+                const mes = document.getElementById('mesSelect').value;
+                carregarDadosCSV(ano, mes);
+            };
         }
 
-        async function switchMonthData(year, month) {
-            if (!year || !month) return;
+        function applyFiltersDashboard2() {
+            const nome = document.getElementById('nomeServidor').value.toLowerCase();
+            const masp = document.getElementById('maspDashboard2').value;
+            const instituicaoInput = document.getElementById('instituicaoDashboard2').value;
+            const cargoInput = document.getElementById('cargoDashboard2').value;
+            const situacaoInput = document.getElementById('situacaoDashboard2').value;
             
-            showLoading(true);
-            try {
-                await carregarMesPorAnoMes(year, month);
-                updateFilterOptions();
-                updateDashboard1();
-                updateDashboard2();
-            } catch (error) {
-                console.error('Erro ao trocar mês:', error);
-                showError('Erro ao carregar dados do mês selecionado.');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        function applyFilters(dashboard) {
-            showLoading(true);
+            const instituicao = instituicaoInput === 'all' || instituicaoInput === '' ? 'all' : instituicaoInput;
+            const cargo = cargoInput === 'all' || cargoInput === '' ? 'all' : cargoInput;
+            const situacao = situacaoInput === 'all' || situacaoInput === '' ? 'all' : situacaoInput;
             
-            if (dashboard === 'dashboard1') {
-                const ano = document.getElementById('anoDashboard1').value;
-                const mes = document.getElementById('mesDashboard1').value;
-                const instituicaoInput = document.getElementById('instituicaoDashboard1').value;
-                
-                const instituicao = instituicaoInput === 'all' || instituicaoInput === '' ? 'all' : instituicaoInput;
-                
-                // Se o ano/mês mudou, carregar os dados
-                if (ano !== currentYear || mes !== currentMonth) {
-                    switchMonthData(ano, mes).then(() => {
-                        applyFiltersAfterLoad(dashboard, instituicao);
-                    });
-                    return;
+            filteredData = servidoresData.filter(servidor => {
+                // Filtro por nome
+                if (nome && !servidor.nome.toLowerCase().includes(nome)) {
+                    return false;
                 }
                 
-                filteredData = servidoresData.filter(servidor => {
-                    // Filtro por instituição
-                    if (instituicao !== 'all' && servidor.desc_instituicao_lotacao !== instituicao) {
-                        return false;
-                    }
-                    
-                    return true;
-                });
-                
-                updateDashboard1();
-                
-            } else if (dashboard === 'dashboard2') {
-                const ano = document.getElementById('anoDashboard2').value;
-                const mes = document.getElementById('mesDashboard2').value;
-                const nome = document.getElementById('nomeServidor').value.toLowerCase();
-                const masp = document.getElementById('maspDashboard2').value;
-                const instituicaoInput = document.getElementById('instituicaoDashboard2').value;
-                const cargoInput = document.getElementById('cargoDashboard2').value;
-                const situacaoInput = document.getElementById('situacaoDashboard2').value;
-                
-                const instituicao = instituicaoInput === 'all' || instituicaoInput === '' ? 'all' : instituicaoInput;
-                const cargo = cargoInput === 'all' || cargoInput === '' ? 'all' : cargoInput;
-                const situacao = situacaoInput === 'all' || situacaoInput === '' ? 'all' : situacaoInput;
-                
-                // Se o ano/mês mudou, carregar os dados
-                if (ano !== currentYear || mes !== currentMonth) {
-                    switchMonthData(ano, mes).then(() => {
-                        applyFiltersAfterLoad(dashboard, nome, masp, instituicao, cargo, situacao);
-                    });
-                    return;
+                // Filtro por MASP
+                if (masp && !servidor.masp.toString().includes(masp)) {
+                    return false;
                 }
                 
-                filteredData = servidoresData.filter(servidor => {
-                    // Filtro por nome
-                    if (nome && !servidor.nome.toLowerCase().includes(nome)) {
-                        return false;
-                    }
-                    
-                    // Filtro por MASP
-                    if (masp && !servidor.masp.toString().includes(masp)) {
-                        return false;
-                    }
-                    
-                    // Filtro por instituição
-                    if (instituicao !== 'all' && servidor.desc_instituicao_lotacao !== instituicao) {
-                        return false;
-                    }
-                    
-                    // Filtro por cargo
-                    if (cargo !== 'all' && servidor.nmefetivo !== cargo) {
-                        return false;
-                    }
-                    
-                    // Filtro por situação
-                    if (situacao !== 'all' && servidor.descsitserv !== situacao) {
-                        return false;
-                    }
-                    
-                    return true;
-                });
+                // Filtro por instituição
+                if (instituicao !== 'all' && servidor.desc_instituicao_lotacao !== instituicao) {
+                    return false;
+                }
                 
-                updateDashboard2();
-            }
-            
-            showLoading(false);
-        }
-
-        function applyFiltersAfterLoad(dashboard, ...otherFilters) {
-            if (dashboard === 'dashboard1') {
-                const [instituicao] = otherFilters;
+                // Filtro por cargo
+                if (cargo !== 'all' && servidor.nmefetivo !== cargo) {
+                    return false;
+                }
                 
-                filteredData = servidoresData.filter(servidor => {
-                    if (instituicao !== 'all' && servidor.desc_instituicao_lotacao !== instituicao) {
-                        return false;
-                    }
-                    
-                    return true;
-                });
+                // Filtro por situação
+                if (situacao !== 'all' && servidor.descsitserv !== situacao) {
+                    return false;
+                }
                 
-                updateDashboard1();
-            } else if (dashboard === 'dashboard2') {
-                const [nome, masp, instituicao, cargo, situacao] = otherFilters;
-                
-                filteredData = servidoresData.filter(servidor => {
-                    if (nome && !servidor.nome.toLowerCase().includes(nome)) {
-                        return false;
-                    }
-                    
-                    if (masp && !servidor.masp.toString().includes(masp)) {
-                        return false;
-                    }
-                    
-                    if (instituicao !== 'all' && servidor.desc_instituicao_lotacao !== instituicao) {
-                        return false;
-                    }
-                    
-                    if (cargo !== 'all' && servidor.nmefetivo !== cargo) {
-                        return false;
-                    }
-                    
-                    if (situacao !== 'all' && servidor.descsitserv !== situacao) {
-                        return false;
-                    }
-                    
-                    return true;
-                });
-                
-                updateDashboard2();
-            }
-            
-            showLoading(false);
-        }
-
-        function filterServidoresTable(searchTerm) {
-            const searchLower = searchTerm.toLowerCase();
-            
-            // Se não há termo de busca, mostrar todos os registros
-            if (!searchTerm.trim()) {
-                updateServidoresTable();
-                return;
-            }
-            
-            // Filtrar os dados
-            const filtered = filteredData.filter(servidor => {
-                return (
-                    servidor.nome.toLowerCase().includes(searchLower) ||
-                    servidor.masp.toString().toLowerCase().includes(searchLower) ||
-                    servidor.nmefetivo.toLowerCase().includes(searchLower) ||
-                    servidor.desc_instituicao_lotacao.toLowerCase().includes(searchLower) ||
-                    servidor.sigla_instituicao_lotacao.toLowerCase().includes(searchLower)
-                );
+                return true;
             });
             
-            // Se encontrou resultados, ir para a página 1 e mostrar
-            if (filtered.length > 0) {
-                const tempFilteredData = filteredData;
-                filteredData = filtered;
-                updateServidoresTable();
-                filteredData = tempFilteredData; // Restaurar dados originais
-            } else {
-                // Se não encontrou resultados, mostrar mensagem
-                const tbody = document.getElementById('servidoresTableBody');
-                const tfoot = document.getElementById('servidoresTableFooter');
-                const countElement = document.getElementById('resumoCountDashboard2');
-                const paginationInfo = document.getElementById('paginationInfoDashboard2');
-                
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nenhum servidor encontrado com o termo de busca.</td></tr>';
-                if (tfoot) tfoot.innerHTML = '';
-                if (countElement) countElement.textContent = '0 servidores';
-                if (paginationInfo) paginationInfo.textContent = 'Mostrando 0-0 de 0 registros';
-                
-                updatePaginationDashboard2(1, 1);
-            }
-        }
-
-        function clearAllFilters() {
-            // Resetar filtros do Dashboard 1
-            document.getElementById('instituicaoDashboard1').value = '';
-            
-            filteredData = servidoresData;
-            
-            updateDashboard1();
+            updateDashboard2();
         }
 
         function clearDashboard2Filters() {
@@ -2235,9 +1913,45 @@
             document.getElementById('searchServidores').value = '';
             currentSearchTerm = '';
             
-            filteredData = servidoresData;
-            
+            filteredData = [...servidoresData];
             updateDashboard2();
+        }
+
+        function filterServidoresTable(searchTerm) {
+            const searchLower = searchTerm.toLowerCase();
+            
+            if (!searchTerm.trim()) {
+                updateServidoresTable();
+                return;
+            }
+            
+            const filtered = filteredData.filter(servidor => {
+                return (
+                    servidor.nome.toLowerCase().includes(searchLower) ||
+                    servidor.masp.toString().toLowerCase().includes(searchLower) ||
+                    servidor.nmefetivo.toLowerCase().includes(searchLower) ||
+                    servidor.desc_instituicao_lotacao.toLowerCase().includes(searchLower) ||
+                    servidor.sigla_instituicao_lotacao.toLowerCase().includes(searchLower)
+                );
+            });
+            
+            if (filtered.length > 0) {
+                const tempFilteredData = filteredData;
+                filteredData = filtered;
+                updateServidoresTable();
+                filteredData = tempFilteredData;
+            } else {
+                const tbody = document.getElementById('servidoresTableBody');
+                const tfoot = document.getElementById('servidoresTableFooter');
+                const countElement = document.getElementById('resumoCountDashboard2');
+                const paginationInfo = document.getElementById('paginationInfoDashboard2');
+                
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nenhum servidor encontrado com o termo de busca.</td></tr>';
+                if (tfoot) tfoot.innerHTML = '';
+                if (countElement) countElement.textContent = '0 servidores';
+                if (paginationInfo) paginationInfo.textContent = 'Mostrando 0-0 de 0 registros';
+                updatePaginationDashboard2(1, 1);
+            }
         }
 
         // ============================================
@@ -2252,12 +1966,11 @@
         function updateSummaryCards() {
             const container = document.getElementById('summaryCards');
             
-            if (filteredData.length === 0) {
+            if (!filteredData || filteredData.length === 0) {
                 container.innerHTML = '<div class="col-12 text-center"><p class="text-muted">Nenhum dado encontrado para o período atual.</p></div>';
                 return;
             }
             
-            // Calcular métricas
             const totalServidores = filteredData.length;
             const instituicoesUnicas = [...new Set(filteredData.map(e => e.desc_instituicao_lotacao))].filter(Boolean).length;
             const cargosUnicos = [...new Set(filteredData.map(e => e.nmefetivo))].filter(Boolean).length;
@@ -2311,7 +2024,7 @@
             const countElement = document.getElementById('resumoCountDashboard1');
             const paginationInfo = document.getElementById('paginationInfoDashboard1');
             
-            if (filteredData.length === 0) {
+            if (!filteredData || filteredData.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Nenhum dado encontrado para o período atual.</td></tr>';
                 tfoot.innerHTML = '';
                 if (countElement) countElement.textContent = '0 registros';
@@ -2320,7 +2033,6 @@
                 return;
             }
             
-            // Agrupar por instituição
             const grupos = {};
             filteredData.forEach(servidor => {
                 const instituicao = servidor.desc_instituicao_lotacao || 'Não informado';
@@ -2336,10 +2048,8 @@
                 grupos[instituicao].count++;
             });
             
-            // Converter para array
             let resumoArray = Object.values(grupos);
             
-            // Ordenar de acordo com a coluna selecionada
             resumoArray.sort((a, b) => {
                 const order = currentSortDashboard1.order === 'asc' ? 1 : -1;
                 
@@ -2353,18 +2063,15 @@
                 return 0;
             });
             
-            // Calcular totais
             const totalInstituicoes = resumoArray.length;
             const totalServidores = resumoArray.reduce((sum, item) => sum + item.count, 0);
             
-            // Paginação
             const itemsPerPage = itemsPerPageDashboard1;
             const totalPages = Math.ceil(resumoArray.length / itemsPerPage);
             const startIndex = (currentPageDashboard1 - 1) * itemsPerPage;
             const endIndex = Math.min(startIndex + itemsPerPage, resumoArray.length);
             const currentData = resumoArray.slice(startIndex, endIndex);
             
-            // Gerar HTML da tabela
             const rowsHTML = currentData.map(item => {
                 return `
                 <tr>
@@ -2378,7 +2085,6 @@
                 </tr>
             `}).join('');
             
-            // Gerar rodapé
             const footerHTML = `
                 <tr class="table-total-row">
                     <td><strong>TOTAL GERAL (${totalInstituicoes} instituições)</strong></td>
@@ -2393,8 +2099,6 @@
             if (paginationInfo) paginationInfo.textContent = `Mostrando ${startIndex + 1}-${endIndex} de ${resumoArray.length.toLocaleString()} registros`;
             
             updatePaginationDashboard1(totalPages, currentPageDashboard1);
-            
-            // Atualizar ícones de ordenação
             updateSortIconsDashboard1();
         }
 
@@ -2424,7 +2128,6 @@
             
             let paginationHTML = '';
             
-            // Botão anterior
             paginationHTML += `
                 <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
                     <a class="page-link" href="#" onclick="changePageDashboard1(${currentPage - 1})" aria-label="Anterior">
@@ -2433,12 +2136,10 @@
                 </li>
             `;
             
-            // Páginas
             const maxVisiblePages = 5;
             let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
             let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
             
-            // Ajustar se estiver no final
             if (endPage - startPage + 1 < maxVisiblePages) {
                 startPage = Math.max(1, endPage - maxVisiblePages + 1);
             }
@@ -2451,7 +2152,6 @@
                 `;
             }
             
-            // Botão próximo
             paginationHTML += `
                 <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
                     <a class="page-link" href="#" onclick="changePageDashboard1(${currentPage + 1})" aria-label="Próximo">
@@ -2488,7 +2188,7 @@
         };
 
         function updateCharts1() {
-            if (filteredData.length === 0) return;
+            if (!filteredData || filteredData.length === 0) return;
             
             updateInstituicaoChart();
             updateCargoChart();
@@ -2499,7 +2199,6 @@
             const ctx = document.getElementById('chartInstituicao')?.getContext('2d');
             if (!ctx) return;
             
-            // Agrupar por instituição e pegar top 8
             const grupos = {};
             filteredData.forEach(servidor => {
                 const instituicao = servidor.desc_instituicao_lotacao || 'Não informado';
@@ -2514,7 +2213,6 @@
                 .sort((a, b) => b.count - a.count)
                 .slice(0, 8);
             
-            // Cores para o gráfico
             const pieColors = [
                 chartColors.primary, chartColors.secondaryGreen, chartColors.accent,
                 chartColors.secondaryBrown, chartColors.secondaryTeal, chartColors.bright,
@@ -2573,7 +2271,6 @@
             const ctx = document.getElementById('chartCargo')?.getContext('2d');
             if (!ctx) return;
             
-            // Agrupar por cargo e pegar top 8
             const grupos = {};
             filteredData.forEach(servidor => {
                 const cargo = servidor.nmefetivo || 'Não informado';
@@ -2639,7 +2336,6 @@
             const ctx = document.getElementById('chartCargaHoraria')?.getContext('2d');
             if (!ctx) return;
             
-            // Agrupar por faixa de carga horária
             const grupos = {
                 'Até 20h': 0,
                 '21-30h': 0,
@@ -2711,10 +2407,6 @@
         // ============================================
         // DASHBOARD 2: CONSULTA INDIVIDUAL
         // ============================================
-        function initializeDashboard2() {
-            updateDashboard2();
-        }
-
         function updateDashboard2() {
             updateServidoresTable();
         }
@@ -2727,7 +2419,7 @@
             
             if (!tbody) return;
             
-            if (filteredData.length === 0) {
+            if (!filteredData || filteredData.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nenhum servidor encontrado para o período atual.</td></tr>';
                 if (tfoot) tfoot.innerHTML = '';
                 if (countElement) countElement.textContent = '0 servidores';
@@ -2736,7 +2428,6 @@
                 return;
             }
             
-            // Ordenar de acordo com a coluna selecionada
             let servidoresArray = [...filteredData];
             servidoresArray.sort((a, b) => {
                 const order = currentSortDashboard2.order === 'asc' ? 1 : -1;
@@ -2757,19 +2448,16 @@
                 return 0;
             });
             
-            // Calcular totais
             const totalServidores = servidoresArray.length;
             const instituicoesUnicas = [...new Set(servidoresArray.map(e => e.desc_instituicao_lotacao))].filter(Boolean).length;
             const cargosUnicos = [...new Set(servidoresArray.map(e => e.nmefetivo))].filter(Boolean).length;
             
-            // Paginação
             const itemsPerPage = itemsPerPageDashboard2;
             const totalPages = Math.ceil(servidoresArray.length / itemsPerPage);
             const startIndex = (currentPageDashboard2 - 1) * itemsPerPage;
             const endIndex = Math.min(startIndex + itemsPerPage, servidoresArray.length);
             const currentData = servidoresArray.slice(startIndex, endIndex);
             
-            // Gerar HTML da tabela
             const rowsHTML = currentData.map(servidor => `
                 <tr>
                     <td>${servidor.masp || ''}</td>
@@ -2788,7 +2476,6 @@
                 </tr>
             `).join('');
             
-            // Gerar rodapé
             const footerHTML = `
                 <tr class="table-total-row">
                     <td colspan="2"><strong>TOTAL GERAL: ${totalServidores.toLocaleString('pt-BR')} servidores</strong></td>
@@ -2804,8 +2491,6 @@
             if (paginationInfo) paginationInfo.textContent = `Mostrando ${startIndex + 1}-${endIndex} de ${servidoresArray.length.toLocaleString('pt-BR')} registros`;
             
             updatePaginationDashboard2(totalPages, currentPageDashboard2);
-            
-            // Atualizar ícones de ordenação
             updateSortIconsDashboard2();
         }
 
@@ -2835,7 +2520,6 @@
             
             let paginationHTML = '';
             
-            // Botão anterior
             paginationHTML += `
                 <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
                     <a class="page-link" href="#" onclick="changePageDashboard2(${currentPage - 1})" aria-label="Anterior">
@@ -2844,7 +2528,6 @@
                 </li>
             `;
             
-            // Páginas
             const maxVisiblePages = 5;
             let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
             let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
@@ -2861,7 +2544,6 @@
                 `;
             }
             
-            // Botão próximo
             paginationHTML += `
                 <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
                     <a class="page-link" href="#" onclick="changePageDashboard2(${currentPage + 1})" aria-label="Próximo">
@@ -2894,35 +2576,21 @@
             showLoading(true);
             
             try {
-                // Encontrar todos os registros do servidor em todos os meses
-                const historico = [];
+                // Para CSV estático, só temos os dados do mês atual
+                const historico = filteredData.filter(e => 
+                    e.masp === masp || e.nome === nome
+                );
                 
-                // Procurar em todos os meses carregados
-                Object.keys(allData).forEach(key => {
-                    const dadosMes = allData[key];
-                    const registrosMes = dadosMes.filter(e => 
-                        e.masp === masp || e.nome === nome
-                    );
-                    
-                    registrosMes.forEach(registro => {
-                        historico.push(registro);
-                    });
-                });
-                
-                // Ordenar histórico por data (mais recente primeiro)
+                // Ordenar histórico
                 historico.sort((a, b) => {
                     const aKey = `${a.ANO}${a.MES_NUM}`;
                     const bKey = `${b.ANO}${b.MES_NUM}`;
                     return bKey.localeCompare(aKey);
                 });
                 
-                // Preparar informações do servidor
                 const servidor = historico[0] || {};
-                
-                // Atualizar modal
                 const modal = new bootstrap.Modal(document.getElementById('historicModal'));
                 
-                // Informações do servidor
                 const infoHTML = `
                     <div class="employee-info-grid">
                         <div class="info-item">
@@ -2964,12 +2632,10 @@
                 
                 document.getElementById('employeeInfo').innerHTML = infoHTML;
                 
-                // Atualizar título do modal
                 document.getElementById('historicModalLabel').innerHTML = `
                     <i class="fas fa-history me-2"></i>Histórico de ${servidor.nome || ''}
                 `;
                 
-                // Tabela de histórico
                 const historicHTML = historico.map(registro => `
                     <tr>
                         <td>${registro.MES_REFERENCIA || ''}</td>
@@ -2983,7 +2649,6 @@
                 document.getElementById('historicTableBody').innerHTML = historicHTML || 
                     '<tr><td colspan="5" class="text-center text-muted">Nenhum histórico encontrado</td></tr>';
                 
-                // Mostrar modal
                 modal.show();
                 showLoading(false);
                 
@@ -3001,43 +2666,30 @@
             console.log('Filtrando por instituição:', instituicao);
             
             try {
-                // Mudar para a aba de Consulta Individual
                 const tabElement = document.getElementById('dashboard2-tab');
                 if (tabElement) {
-                    // Usar Bootstrap Tab para mudar de aba
                     const tab = new bootstrap.Tab(tabElement);
                     tab.show();
                     
-                    // Aguardar a transição da aba
                     setTimeout(() => {
-                        // Preencher o campo da instituição no Dashboard 2
                         const instituicaoElement = document.getElementById('instituicaoDashboard2');
                         if (instituicaoElement) {
                             instituicaoElement.value = instituicao;
                         }
                         
-                        // Limpar outros filtros
                         document.getElementById('nomeServidor').value = '';
                         document.getElementById('maspDashboard2').value = '';
                         document.getElementById('cargoDashboard2').value = '';
                         document.getElementById('situacaoDashboard2').value = '';
                         document.getElementById('searchServidores').value = '';
                         
-                        // Configurar o ano e mês atuais
-                        document.getElementById('anoDashboard2').value = currentYear;
-                        document.getElementById('mesDashboard2').value = currentMonth;
+                        applyFiltersDashboard2();
                         
-                        // Aplicar o filtro
-                        applyFilters('dashboard2');
-                        
-                        // Rolar para a tabela
                         const tableContainer = document.querySelector('#dashboard2 .table-container');
                         if (tableContainer) {
                             tableContainer.scrollIntoView({ behavior: 'smooth' });
                         }
                     }, 350);
-                } else {
-                    console.error('Elemento da aba não encontrado');
                 }
             } catch (error) {
                 console.error('Erro ao filtrar por instituição:', error);
@@ -3046,13 +2698,8 @@
         };
 
         // ============================================
-        // DASHBOARD 3: DOWNLOADS
+        // DOWNLOAD CSV
         // ============================================
-        function updateDashboard3() {
-            // Atualizar as opções de download
-            updateMesesDownload();
-        }
-
         async function downloadMesCSV() {
             const ano = document.getElementById('anoDownload').value;
             const mes = document.getElementById('mesDownload').value;
@@ -3065,35 +2712,20 @@
             showLoading(true);
             
             try {
-                const key = `${ano}${mes.padStart(2, '0')}`;
+                const arquivo = `data/dados_serv_${ano}${mes}.csv`;
+                const dados = await parseCSV(arquivo);
                 
-                // Verificar se já temos os dados carregados
-                if (!allData[key]) {
-                    // Carregar datapackage novamente para garantir que temos os recursos atualizados
-                    const dp = await carregarDatapackage();
-                    const recursosPorMes = indexarRecursos(dp);
-                    
-                    if (recursosPorMes[key]) {
-                        await carregarMes(key, recursosPorMes);
-                    } else {
-                        throw new Error(`Mês ${mes}/${ano} não disponível`);
-                    }
-                }
-                
-                const dadosMes = allData[key];
-                
-                if (!dadosMes || dadosMes.length === 0) {
+                if (!dados || dados.length === 0) {
                     alert(`Nenhum dado disponível para ${monthNames[mes]}/${ano}.`);
                     showLoading(false);
                     return;
                 }
                 
-                // Preparar CSV
                 const headers = ['ano_mes', 'masp', 'adm', 'nome', 'siglaefetivo', 'nmefetivo', 'carga_horaria', 
                                 'sigla_instituicao_lotacao', 'desc_instituicao_lotacao', 'descsitserv'];
                 const csvContent = [
                     headers.join(';'),
-                    ...dadosMes.map(servidor => [
+                    ...dados.map(servidor => [
                         servidor.ano_mes,
                         servidor.masp,
                         servidor.adm,
@@ -3107,7 +2739,6 @@
                     ].map(cell => `"${cell}"`).join(';'))
                 ].join('\n');
                 
-                // Criar e baixar arquivo
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const link = document.createElement('a');
                 const url = URL.createObjectURL(blob);
@@ -3119,7 +2750,7 @@
                 link.click();
                 document.body.removeChild(link);
                 
-                console.log(`Download do mês ${mes}/${ano} realizado: ${dadosMes.length} registros`);
+                console.log(`Download do mês ${mes}/${ano} realizado: ${dados.length} registros`);
                 
             } catch (error) {
                 console.error(`Erro ao baixar dados de ${mes}/${ano}:`, error);
@@ -3138,24 +2769,18 @@
         // ============================================
         window.sortTable = function(tableType, column) {
             if (tableType === 'visaoGeral') {
-                // Verificar se está ordenando a mesma coluna
                 if (currentSortDashboard1.column === column) {
-                    // Inverter a ordem
                     currentSortDashboard1.order = currentSortDashboard1.order === 'asc' ? 'desc' : 'asc';
                 } else {
-                    // Nova coluna, ordem padrão asc
                     currentSortDashboard1.column = column;
                     currentSortDashboard1.order = 'asc';
                 }
                 currentPageDashboard1 = 1;
                 updateResumoTable();
             } else if (tableType === 'servidores') {
-                // Verificar se está ordenando a mesma coluna
                 if (currentSortDashboard2.column === column) {
-                    // Inverter a ordem
                     currentSortDashboard2.order = currentSortDashboard2.order === 'asc' ? 'desc' : 'asc';
                 } else {
-                    // Nova coluna, ordem padrão asc
                     currentSortDashboard2.column = column;
                     currentSortDashboard2.order = 'asc';
                 }
@@ -3175,14 +2800,9 @@
             }
         }
 
-        function printDashboard(source) {
-            window.print();
-        }
-
         function exportResumoCSV() {
-            if (filteredData.length === 0) return;
+            if (!filteredData || filteredData.length === 0) return;
             
-            // Agrupar por instituição
             const grupos = {};
             filteredData.forEach(servidor => {
                 const instituicao = servidor.desc_instituicao_lotacao || 'Não informado';
@@ -3223,7 +2843,7 @@
         }
 
         function exportServidoresCSV() {
-            if (filteredData.length === 0) return;
+            if (!filteredData || filteredData.length === 0) return;
             
             const headers = ['masp', 'nome', 'sigla_instituicao_lotacao', 'desc_instituicao_lotacao', 
                            'siglaefetivo', 'nmefetivo', 'carga_horaria', 'descsitserv', 
@@ -3256,6 +2876,12 @@
             link.click();
             document.body.removeChild(link);
         }
+
+        // ============================================
+        // VARIÁVEIS GLOBAIS DE DADOS
+        // ============================================
+        let servidoresData = [];
+        let filteredData = [];
     </script>
 </body>
 </html>
