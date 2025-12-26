@@ -1,21 +1,12 @@
-# Core
 requests==2.31.0
 psycopg2-binary==2.9.9
-frictionless==5.18.0
-
-# Dados
 pandas==1.5.3
 openpyxl==3.1.2
 unidecode==1.3.6
-
-# CKAN
 dpckan==0.1.22
-
-# Templates / docs
 Jinja2==3.1.2
 livemark==0.109.0
-
-# Dev / testes (ok manter aqui por enquanto)
 ipdb==0.13.13
 taskipy==1.11.0
 pytest==8.0.0
+

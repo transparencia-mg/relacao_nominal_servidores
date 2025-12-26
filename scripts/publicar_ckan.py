@@ -1,57 +1,61 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+name: Publicar dataset no CKAN (dados.mg.gov.br)
 
-"""
-Publica/atualiza APENAS METADADOS do dataset no CKAN
-usando o datapackage.json gerado automaticamente.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "data/**"
+      - "datapackage/**"
+      - "scripts/**"
+      - "requirements.txt"
+  workflow_dispatch:
 
-- Não publica CSV
-- Não altera dados
-- Fail-fast para CI/CD
-"""
+jobs:
+  publish_ckan:
+    runs-on: ubuntu-22.04
 
-import subprocess
-import sys
-import os
-import shutil
+    steps:
+      - name: 📥 Checkout do repositório
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-DATAPACKAGE_PATH = "datapackage/datapackage.json"
+      - name: 🐍 Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-def main():
-    ckan_host = os.environ.get("CKAN_HOST")
-    ckan_key = os.environ.get("CKAN_KEY")
+      - name: 📦 Instalar dependências
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    if not ckan_host or not ckan_key:
-        sys.exit("❌ CKAN_HOST ou CKAN_KEY não configurados")
+      # (Opcional, mas recomendado)
+      - name: 🧪 Verificar versões críticas
+        run: |
+          python - << 'EOF'
+          import dpckan
+          import frictionless
+          print("dpckan:", dpckan.__version__)
+          print("frictionless:", frictionless.__version__)
+          EOF
 
-    if not os.path.exists(DATAPACKAGE_PATH):
-        sys.exit(f"❌ {DATAPACKAGE_PATH} não encontrado")
-
-    # Garante que dpckan está disponível
-    if not shutil.which("dpckan"):
-        sys.exit("❌ dpckan não encontrado no PATH")
-
-    cmd = [
-        "dpckan",
-        "dataset",
-        "update",
-        "--ckan-host", ckan_host,
-        "--ckan-key", ckan_key,
-        "--datapackage", DATAPACKAGE_PATH
-    ]
-
-    print("🚀 Atualizando metadados no CKAN")
-    print("🔗 Dataset:", ckan_host)
-    print("📦 Datapackage:", DATAPACKAGE_PATH)
-
-    try:
-        subprocess.run(cmd, check=True)
-    except subprocess.CalledProcessError as e:
-        sys.exit(f"❌ Erro ao atualizar metadados no CKAN (dpckan exit {e.returncode})")
-
-    print("✅ Metadados atualizados com sucesso")
-
-if __name__ == "__main__":
-    main()
+      - name: 📦 Publicar datapackage no CKAN
+        env:
+          CKAN_HOST: ${{ secrets.CKAN_HOST }}
+          CKAN_KEY: ${{ secrets.CKAN_KEY }}
+        run: |
+          dpckan \
+            --datastore \
+            --ckan-host "$CKAN_HOST" \
+            --ckan-key "$CKAN_KEY" \
+            --datapackage datapackage/datapackage.json \
+            dataset create || \
+          dpckan \
+            --datastore \
+            --ckan-host "$CKAN_HOST" \
+            --ckan-key "$CKAN_KEY" \
+            --datapackage datapackage/datapackage.json \
+            dataset update
 
 
