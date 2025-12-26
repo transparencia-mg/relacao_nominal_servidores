@@ -21,45 +21,35 @@ jobs:
       name: github-pages
 
     steps:
-      # 1️⃣ Checkout
       - name: 📥 Checkout
         uses: actions/checkout@v4
 
-      # 2️⃣ Preparar conteúdo do Pages
-      
-  	run: |
-    echo "🧹 Limpando pasta docs/"
-    rm -rf docs
-    mkdir docs
-
-    echo "📄 Copiando HTML de dashboard"
-    cp pages/index.html docs/index.html
-
-    echo "📊 Copiando CSVs"
-    mkdir docs/data
-    cp data/*.csv docs/data/
-
-    echo "📦 Copiando datapackage.json"
-    cp datapackage/datapackage.json docs/datapackage.json
-
-    echo "📂 Conteúdo final publicado:"
-    ls -R docs
-
-
-      # 3️⃣ Validação mínima
-      - name: 🧪 Validar Pages
+      - name: 🧱 Preparar conteúdo do Pages
         run: |
-          test -f docs/index.html
-          test -f docs/datapackage.json
+          echo "🧹 Limpando docs/"
+          rm -rf docs
+          mkdir docs
 
-      # 4️⃣ Upload artefato
+          echo "📄 Copiando dashboard HTML"
+          cp pages/index.html docs/index.html
+
+          echo "📊 Copiando CSVs"
+          mkdir docs/data
+          cp data/*.csv docs/data/
+
+          echo "📦 Copiando datapackage.json"
+          cp datapackage/datapackage.json docs/datapackage.json
+
+          echo "📂 Conteúdo final:"
+          ls -R docs
+
       - name: 📦 Upload artefato Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs
 
-      # 5️⃣ Deploy
       - name: 🚀 Deploy no GitHub Pages
         uses: actions/deploy-pages@v4
+
 
 
