@@ -1,8 +1,21 @@
 {
   "fields": [
-    { "name": "masp", "type": "string" },
-    { "name": "data", "type": "date" },
-    { "name": "horas_trabalhadas", "type": "number" }
+    {
+      "name": "masp",
+      "type": "string",
+      "description": "Matrícula do servidor"
+    },
+    {
+      "name": "data",
+      "type": "string",
+      "description": "Data de referência (YYYY-MM-DD)"
+    },
+    {
+      "name": "horas_trabalhadas",
+      "type": "string",
+      "description": "Total de horas trabalhadas no dia"
+    }
   ],
   "missingValues": [""]
 }
+
