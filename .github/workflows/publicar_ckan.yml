@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "datapackage/**"
+      - "schemas/**"
       - "scripts/**"
 
 jobs:
@@ -24,18 +25,25 @@ jobs:
           python-version: "3.10"
 
       # 3️⃣ Instalar dependências
-      - name: 📦 Instalar dpckan
+      - name: 📦 Instalar dependências
         run: |
           python -m pip install --upgrade pip
           pip install dpckan frictionless requests
 
-      # 4️⃣ Publicar no CKAN
-      - name: 🚀 Publicar dataset no dados.mg
+      # 4️⃣ Gerar datapackage.json
+      - name: 📦 Gerar datapackage.json
+        run: |
+          python scripts/gerar_datapackage.py
+
+      # 5️⃣ Validar schemas (Frictionless)
+      - name: 🧪 Validar schemas
+        run: |
+          python scripts/validar_schema_ckan.py
+
+      # 6️⃣ Publicar metadados no CKAN
+      - name: 🚀 Publicar metadados no dados.mg
         env:
           CKAN_HOST: ${{ secrets.CKAN_HOST }}
           CKAN_KEY: ${{ secrets.CKAN_KEY }}
         run: |
-          dpckan dataset create \
-            --datapackage datapackage/datapackage.json \
-            --ckan-host "$CKAN_HOST" \
-            --ckan-key "$CKAN_KEY"
+          python scripts/publicar_ckan.py
