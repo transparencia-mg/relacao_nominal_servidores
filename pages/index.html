@@ -928,7 +928,7 @@
                         <p class="header-subtitle">Governo do Estado de Minas Gerais - Servidores do Poder Executivo</p>
                         <div class="header-info">
                             <span class="badge-atualizacao-header">
-                                <i class="fas fa-sync-alt"></i> Fonte: CSV do PostgreSQL
+                                <i class="fas fa-sync-alt"></i> Fonte: DataStore CKAN
                             </span>
                         </div>
                     </div>
@@ -937,9 +937,9 @@
                 <!-- Informação de Fonte de Dados -->
                 <div class="text-end">
                     <div class="btn-export" style="background: rgba(255, 255, 255, 0.2); color: white; border-color: white;">
-                        <i class="fas fa-database me-2"></i> Fonte: PostgreSQL CSV
+                        <i class="fas fa-database me-2"></i> Fonte: DataStore CKAN
                     </div>
-                    <small class="text-white d-block mt-1" style="font-size: 10px;">Arquivo: <span id="arquivoAtual">dados_serv_202411.csv</span></small>
+                    <small class="text-white d-block mt-1" style="font-size: 10px;">Arquivo: <span id="arquivoAtual">dados_serv_202411</span></small>
                 </div>
             </div>
         </div>
@@ -1570,6 +1570,143 @@
         };
 
         // ============================================
+        // URL DO DATAPACKAGE (PASSO 2)
+        // ============================================
+        const DATAPACKAGE_URL = 'datapackage.json';
+
+        // ============================================
+        // FUNÇÃO PARA LER O DATAPACKAGE (PASSO 3)
+        // ============================================
+        async function carregarDatapackage() {
+            const resp = await fetch(DATAPACKAGE_URL);
+            if (!resp.ok) {
+                throw new Error('Erro ao carregar datapackage.json');
+            }
+            return await resp.json();
+        }
+
+        // ============================================
+        // MAPA ANO_MES → RESOURCE_ID (PASSO 4)
+        // ============================================
+        function indexarRecursosPorMes(dp) {
+            const mapa = {};
+
+            dp.resources.forEach(r => {
+                const match = r.name.match(/dados_serv_(\d{6})/);
+                if (match && r.id) {
+                    mapa[match[1]] = r.id;
+                }
+            });
+
+            return mapa;
+        }
+
+        // Variável global para o mapa de recursos
+        let RECURSOS_POR_MES = {};
+
+        // ============================================
+        // FUNÇÃO BASE PARA CONSULTAR O DATASTORE (PASSO 5)
+        // ============================================
+        async function carregarMesDatastore(ano, mes, limit = 5000) {
+            const anoMes = `${ano}${mes}`;
+            const resourceId = RECURSOS_POR_MES[anoMes];
+
+            if (!resourceId) {
+                throw new Error(`Mês ${anoMes} não encontrado no datapackage`);
+            }
+
+            let offset = 0;
+            let todos = [];
+            let total = 0;
+
+            do {
+                const url =
+                    `https://dados.mg.gov.br/api/3/action/datastore_search` +
+                    `?resource_id=${resourceId}` +
+                    `&limit=${limit}` +
+                    `&offset=${offset}`;
+
+                const resp = await fetch(url);
+                const json = await resp.json();
+
+                if (!json.success) {
+                    throw new Error('Erro ao consultar DataStore');
+                }
+
+                todos.push(...json.result.records);
+                total = json.result.total;
+                offset += limit;
+
+                console.log(`📥 ${todos.length}/${total}`);
+            } while (offset < total);
+
+            return todos;
+        }
+
+        // ============================================
+        // FUNÇÃO PARA CARREGAR DADOS (PASSO 6 - SUBSTITUI carregarDadosCSV)
+        // ============================================
+        async function carregarDados(ano, mes) {
+            showLoading(true);
+
+            try {
+                const dados = await carregarMesDatastore(ano, mes);
+
+                servidoresData = dados.map(row => ({
+                    ano_mes: row.ano_mes || '',
+                    masp: row.masp || '',
+                    adm: row.adm || '',
+                    nome: row.nome || '',
+                    siglaefetivo: row.siglaefetivo || '',
+                    nmefetivo: row.nmefetivo || '',
+                    carga_horaria: parseInt(row.carga_horaria) || 0,
+                    sigla_instituicao_lotacao: row.sigla_instituicao_lotacao || '',
+                    desc_instituicao_lotacao: row.desc_instituicao_lotacao || '',
+                    descsitserv: row.descsitserv || ''
+                }));
+
+                filteredData = [...servidoresData];
+
+                updateDashboard1();
+                updateDashboard2();
+                updateFilterOptions();
+
+                // Atualizar informações do arquivo
+                document.getElementById('arquivoAtual').textContent = `dados_serv_${ano}${mes}`;
+                document.getElementById('arquivoFooter').textContent = `dados_serv_${ano}${mes}`;
+
+            } catch (e) {
+                console.error(e);
+                showError('Erro ao carregar dados do DataStore');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // ============================================
+        // INICIALIZAÇÃO (PASSO 7)
+        // ============================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                console.log('=== INICIANDO DASHBOARD (DataStore) ===');
+
+                const dp = await carregarDatapackage();
+                RECURSOS_POR_MES = indexarRecursosPorMes(dp);
+
+                await carregarDados(currentYear, currentMonth);
+
+                // Configurar listeners
+                setupEventListeners();
+                
+                console.log('Dashboard carregado com sucesso!');
+
+            } catch (e) {
+                console.error('Erro ao inicializar:', e);
+                showError('Erro ao inicializar o dashboard');
+            }
+        });
+
+        // ============================================
         // MESES
         // ============================================
         const monthNames = {
@@ -1586,125 +1723,6 @@
             '11': 'Novembro',
             '12': 'Dezembro'
         };
-
-        // ============================================
-        // INICIALIZAÇÃO
-        // ============================================
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('=== INICIANDO DASHBOARD SERVIDORES (CSV PostgreSQL) ===');
-            
-            // Carregar dados iniciais
-            await carregarDadosCSV(currentYear, currentMonth);
-            
-            // Configurar listeners
-            setupEventListeners();
-            
-            console.log('Dashboard carregado com sucesso!');
-        });
-
-        // ============================================
-        // CARREGAR DADOS DO CSV
-        // ============================================
-        async function carregarDadosCSV(ano, mes) {
-            showLoading(true);
-            
-            try {
-                const arquivo = `data/dados_serv_${ano}${mes}.csv`;
-                console.log(`Carregando CSV: ${arquivo}`);
-                
-                // Atualizar informações do arquivo
-                document.getElementById('arquivoAtual').textContent = `dados_serv_${ano}${mes}.csv`;
-                document.getElementById('arquivoFooter').textContent = `dados_serv_${ano}${mes}.csv`;
-                
-                // Parse do CSV
-                const dados = await parseCSV(arquivo);
-                
-                if (dados && dados.length > 0) {
-                    // Processar dados
-                    servidoresData = dados.map(row => ({
-                        ano_mes: row.ano_mes || '',
-                        masp: row.masp || '',
-                        adm: row.adm || '',
-                        nome: row.nome || '',
-                        siglaefetivo: row.siglaefetivo || '',
-                        nmefetivo: row.nmefetivo || '',
-                        cdcomi: row.cdcomi || '',
-                        desccomi: row.desccomi || '',
-                        cd_funcao_gratif_gte: row.cd_funcao_gratif_gte || '',
-                        desc_funcao_gratif_gte: row.desc_funcao_gratif_gte || '',
-                        carga_horaria: parseInt(row.carga_horaria) || 0,
-                        cd_instituicao_dotacao: row.cd_instituicao_dotacao || '',
-                        sigla_instituicao_dotacao: row.sigla_instituicao_dotacao || '',
-                        desc_instituicao_dotacao: row.desc_instituicao_dotacao || '',
-                        cd_instituicao_lotacao: row.cd_instituicao_lotacao || '',
-                        sigla_instituicao_lotacao: row.sigla_instituicao_lotacao || '',
-                        desc_instituicao_lotacao: row.desc_instituicao_lotacao || '',
-                        descsitserv: row.descsitserv || '',
-                        id_data_inicio: row.id_data_inicio || row.data_inicio || '',
-                        id_data_aposentadoria: row.id_data_aposentadoria || row.data_aposentadoria || '',
-                        id_data_desligamento: row.id_data_desligamento || row.data_desligamento || '',
-                        ANO: ano,
-                        MES_NUM: mes,
-                        COMPETENCIA: `${ano}-${mes}`,
-                        MES_REFERENCIA: `${monthNames[mes]}/${ano}`
-                    }));
-                    
-                    filteredData = [...servidoresData];
-                    
-                    console.log(`Dados carregados: ${servidoresData.length} registros`);
-                    
-                    // Atualizar dashboards
-                    updateDashboard1();
-                    updateDashboard2();
-                    updateFilterOptions();
-                } else {
-                    console.warn('Nenhum dado encontrado no CSV');
-                    filteredData = [];
-                    servidoresData = [];
-                    
-                    // Limpar dashboards
-                    document.getElementById('summaryCards').innerHTML = '<div class="col-12 text-center"><p class="text-muted">Nenhum dado encontrado.</p></div>';
-                    document.getElementById('resumoTableBody').innerHTML = '<tr><td colspan="3" class="text-center text-muted">Nenhum dado encontrado.</td></tr>';
-                    document.getElementById('servidoresTableBody').innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nenhum servidor encontrado.</td></tr>';
-                }
-                
-            } catch (error) {
-                console.error('Erro ao carregar CSV:', error);
-                showError('Erro ao carregar dados do arquivo CSV.');
-                
-                // Limpar dashboards em caso de erro
-                filteredData = [];
-                servidoresData = [];
-                document.getElementById('summaryCards').innerHTML = '<div class="col-12 text-center"><p class="text-muted">Erro ao carregar dados.</p></div>';
-                document.getElementById('resumoTableBody').innerHTML = '<tr><td colspan="3" class="text-center text-muted">Erro ao carregar dados.</td></tr>';
-                document.getElementById('servidoresTableBody').innerHTML = '<tr><td colspan="7" class="text-center text-muted">Erro ao carregar dados.</td></tr>';
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // ============================================
-        // FUNÇÃO PARA PARSE DE CSV
-        // ============================================
-        function parseCSV(url) {
-            return new Promise((resolve, reject) => {
-                Papa.parse(url, {
-                    download: true,
-                    header: true,
-                    delimiter: ';',
-                    skipEmptyLines: true,
-                    encoding: 'UTF-8',
-                    complete: function(results) {
-                        console.log(`CSV parseado: ${results.data.length} registros`);
-                        resolve(results.data);
-                    },
-                    error: function(error) {
-                        console.error('Erro no parse do CSV:', error);
-                        reject(error);
-                    }
-                });
-            });
-        }
 
         // ============================================
         // FUNÇÕES DE UTILIDADE
@@ -1802,7 +1820,7 @@
             document.getElementById('carregarDados').addEventListener('click', function() {
                 const ano = document.getElementById('anoSelect').value;
                 const mes = document.getElementById('mesSelect').value;
-                carregarDadosCSV(ano, mes);
+                carregarDados(ano, mes);
             });
             
             // Dashboard 1 - Limpar filtros
@@ -1857,7 +1875,7 @@
             window.carregarDadosAtuais = function() {
                 const ano = document.getElementById('anoSelect').value;
                 const mes = document.getElementById('mesSelect').value;
-                carregarDadosCSV(ano, mes);
+                carregarDados(ano, mes);
             };
         }
 
@@ -2576,15 +2594,15 @@
             showLoading(true);
             
             try {
-                // Para CSV estático, só temos os dados do mês atual
+                // Para DataStore, só temos os dados do mês atual
                 const historico = filteredData.filter(e => 
                     e.masp === masp || e.nome === nome
                 );
                 
                 // Ordenar histórico
                 historico.sort((a, b) => {
-                    const aKey = `${a.ANO}${a.MES_NUM}`;
-                    const bKey = `${b.ANO}${b.MES_NUM}`;
+                    const aKey = `${a.ano_mes}`;
+                    const bKey = `${b.ano_mes}`;
                     return bKey.localeCompare(aKey);
                 });
                 
@@ -2624,7 +2642,7 @@
                         <div class="info-item">
                             <span class="info-label">Período</span>
                             <span class="info-value">${historico.length > 0 ? 
-                                `${historico[historico.length-1].MES_REFERENCIA} a ${historico[0].MES_REFERENCIA}` : 
+                                `${servidor.ano_mes || currentYear+currentMonth}` : 
                                 'N/A'}</span>
                         </div>
                     </div>
@@ -2638,7 +2656,7 @@
                 
                 const historicHTML = historico.map(registro => `
                     <tr>
-                        <td>${registro.MES_REFERENCIA || ''}</td>
+                        <td>${registro.ano_mes || ''}</td>
                         <td>${registro.desc_instituicao_lotacao || ''}<br><small>${registro.sigla_instituicao_lotacao || ''}</small></td>
                         <td>${registro.nmefetivo || ''}</td>
                         <td>${registro.carga_horaria || 0}h</td>
@@ -2712,8 +2730,7 @@
             showLoading(true);
             
             try {
-                const arquivo = `data/dados_serv_${ano}${mes}.csv`;
-                const dados = await parseCSV(arquivo);
+                const dados = await carregarMesDatastore(ano, mes);
                 
                 if (!dados || dados.length === 0) {
                     alert(`Nenhum dado disponível para ${monthNames[mes]}/${ano}.`);
@@ -2847,7 +2864,7 @@
             
             const headers = ['masp', 'nome', 'sigla_instituicao_lotacao', 'desc_instituicao_lotacao', 
                            'siglaefetivo', 'nmefetivo', 'carga_horaria', 'descsitserv', 
-                           'MES_REFERENCIA'];
+                           'ano_mes'];
             const data = filteredData.map(servidor => [
                 servidor.masp,
                 servidor.nome,
@@ -2857,7 +2874,7 @@
                 servidor.nmefetivo,
                 servidor.carga_horaria,
                 servidor.descsitserv,
-                servidor.MES_REFERENCIA
+                servidor.ano_mes || `${currentYear}${currentMonth}`
             ]);
             
             const csvContent = [
