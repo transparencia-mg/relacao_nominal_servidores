@@ -1,4 +1,4 @@
-name: Publicar GitHub Pages (site estático)
+name: Publicar GitHub Pages (Static)
 
 on:
   push:
@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
 
@@ -30,17 +30,16 @@ jobs:
           rm -rf docs
           mkdir docs
 
-          echo "📄 Copiando dashboard (pages → docs)"
+          echo "📄 Copiando dashboard"
           cp -r pages/* docs/
 
-          echo "🚫 Desativando Jekyll"
-          touch docs/.nojekyll
+          echo "📦 (Opcional) Copiando datapackage.json"
+          if [ -f datapackage/datapackage.json ]; then
+            cp datapackage/datapackage.json docs/datapackage.json
+          fi
 
-          echo "📦 Copiando datapackage.json"
-          cp datapackage/datapackage.json docs/datapackage.json
-
-          echo "📂 Conteúdo final publicado:"
-          ls -R docs
+          echo "📂 Conteúdo final do docs/"
+          ls -lah docs
 
       - name: 📦 Upload artefato Pages
         uses: actions/upload-pages-artifact@v3
@@ -49,3 +48,4 @@ jobs:
 
       - name: 🚀 Deploy no GitHub Pages
         uses: actions/deploy-pages@v4
+
