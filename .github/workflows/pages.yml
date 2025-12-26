@@ -26,40 +26,16 @@ jobs:
         uses: actions/checkout@v4
 
       # 2️⃣ Preparar conteúdo do Pages
-      - name: 🧱 Preparar conteúdo institucional
+      - name: 🧱 Preparar conteúdo do Pages
         run: |
           echo "🧹 Limpando pasta docs/"
           rm -rf docs
           mkdir docs
 
-          echo "📄 Criando página institucional simples"
-          cat << 'EOF' > docs/index.html
-          <!DOCTYPE html>
-          <html lang="pt-br">
-          <head>
-            <meta charset="UTF-8">
-            <title>Relação Nominal de Servidores – MG</title>
-          </head>
-          <body>
-            <h1>Relação Nominal de Servidores – MG</h1>
-            <p>
-              Este repositório gerencia metadados e publicação do dataset
-              <strong>Relação Nominal de Servidores</strong> no portal dados.mg.
-            </p>
-
-            <p>
-              <a href="datapackage.json">📦 Acessar datapackage.json</a>
-            </p>
-
-            <p>
-              Fonte oficial:
-              <a href="https://dados.mg.gov.br/dataset/relacao_nominal_servidores">
-                dados.mg
-              </a>
-            </p>
-          </body>
-          </html>
-          EOF
+          echo "📄 Copiando site"
+          cp pages/index.html docs/
+          cp pages/app.js docs/ || true
+          cp pages/style.css docs/ || true
 
           echo "📦 Copiando datapackage.json"
           if [ ! -f datapackage/datapackage.json ]; then
@@ -71,13 +47,13 @@ jobs:
           echo "📂 Conteúdo final do docs/:"
           ls -lah docs
 
-      # 3️⃣ Validação
+      # 3️⃣ Validação mínima
       - name: 🧪 Validar Pages
         run: |
           test -f docs/index.html
           test -f docs/datapackage.json
 
-      # 4️⃣ Upload do artefato
+      # 4️⃣ Upload artefato
       - name: 📦 Upload artefato Pages
         uses: actions/upload-pages-artifact@v3
         with:
@@ -86,4 +62,5 @@ jobs:
       # 5️⃣ Deploy
       - name: 🚀 Deploy no GitHub Pages
         uses: actions/deploy-pages@v4
+
 
