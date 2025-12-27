@@ -377,7 +377,7 @@
         
         /* Coluna de ações na tabela */
         .actions-column {
-            width: 100px;
+            width: 120px;
             text-align: center;
         }
         
@@ -406,6 +406,16 @@
         
         .btn-history:hover {
             background-color: var(--primary-darker);
+            transform: translateY(-1px);
+        }
+
+        .btn-search {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+        
+        .btn-search:hover {
+            background-color: var(--accent-bright);
             transform: translateY(-1px);
         }
         
@@ -579,6 +589,7 @@
         .orgao-link:hover {
             color: var(--accent-blue);
             background-color: rgba(58, 110, 165, 0.05);
+            text-decoration: underline;
         }
         
         /* ==================== PAGINAÇÃO ==================== */
@@ -852,7 +863,7 @@
             }
             
             .actions-column {
-                width: 80px;
+                width: 100px;
             }
             
             .btn-action {
@@ -900,7 +911,7 @@
             }
             
             .actions-column {
-                width: 70px;
+                width: 90px;
             }
             
             .btn-action {
@@ -1008,7 +1019,7 @@
                         <div class="col-12">
                             <div class="d-flex gap-3 flex-wrap">
                                 <button class="btn-primary-custom" id="carregarDados">
-                                    <i class="fas fa-search me-2"></i>Carregar Dados
+                                    <i class="fas fa-search me-2"></i>Aplicar Filtros
                                 </button>
                                 <button class="btn-secondary-custom" id="limparFiltros">
                                     <i class="fas fa-redo me-2"></i>Limpar Filtros
@@ -1057,53 +1068,6 @@
                     </div>
                 </div>
 
-                <!-- Visão Geral (Tabela Simples) -->
-                <div class="table-container mb-4">
-                    <div class="table-header">
-                        <h3 class="table-title">Visão Geral por Instituição</h3>
-                    </div>
-                    <div class="p-3">
-                        <div class="table-responsive">
-                            <table id="tabela-visao-geral" class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Sigla</th>
-                                        <th>Órgão</th>
-                                        <th>Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- JS preenche aqui -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Detalhado (Tabela Simples) -->
-                <div class="table-container mb-4">
-                    <div class="table-header">
-                        <h3 class="table-title">Detalhado por Servidor</h3>
-                    </div>
-                    <div class="p-3">
-                        <div class="table-responsive">
-                            <table id="tabela-detalhada" class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>MASP</th>
-                                        <th>Nome</th>
-                                        <th>Órgão</th>
-                                        <th>Cargo</th>
-                                        <th>Carga Horária</th>
-                                        <th>Situação</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Ações Dashboard 1 -->
                 <div class="actions-container mb-4">
                     <div class="export-buttons">
@@ -1119,7 +1083,7 @@
                 <!-- Tabela Dashboard 1 - VISÃO GERAL POR INSTITUIÇÃO -->
                 <div class="table-container">
                     <div class="table-header">
-                        <h3 class="table-title">Visão Geral por Instituição (Detalhado)</h3>
+                        <h3 class="table-title">Visão Geral por Instituição</h3>
                         <div class="d-flex align-items-center gap-3 ms-auto">
                             <div class="items-per-page">
                                 <span>Itens por página:</span>
@@ -1130,7 +1094,7 @@
                                     <option value="100">100</option>
                                 </select>
                             </div>
-                            <span class="table-badge" id="resumoCountDashboard1">0 registros</span>
+                            <span class="table-badge" id="resumoCountDashboard1">0 instituições</span>
                         </div>
                     </div>
                     <div class="table-fixed-header-container">
@@ -1138,14 +1102,15 @@
                             <thead>
                                 <tr>
                                     <th data-sort="sigla_instituicao" data-order="asc" onclick="sortTable('visaoGeral', 'sigla_instituicao')">
-                                        Sigla Instituição <span class="sort-icon">▼</span>
+                                        Sigla <span class="sort-icon">▼</span>
                                     </th>
                                     <th data-sort="desc_instituicao" data-order="asc" onclick="sortTable('visaoGeral', 'desc_instituicao')">
-                                        Instituição de Lotação <span class="sort-icon">▼</span>
+                                        Órgão/Instituição <span class="sort-icon">▼</span>
                                     </th>
                                     <th data-sort="quantidade" data-order="desc" onclick="sortTable('visaoGeral', 'quantidade')">
                                         Quantidade de Servidores <span class="sort-icon">▼</span>
                                     </th>
+                                    <th class="actions-column">Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="resumoTableBody">
@@ -1291,7 +1256,7 @@
                                 <tr>
                                     <th data-sort="masp" data-order="asc" onclick="sortTable('servidores', 'masp')">MASP <span class="sort-icon">▼</span></th>
                                     <th data-sort="nome" data-order="asc" onclick="sortTable('servidores', 'nome')">Nome <span class="sort-icon">▼</span></th>
-                                    <th data-sort="sigla_instituicao_lotacao" data-order="asc" onclick="sortTable('servidores', 'sigla_instituicao_lotacao')">Instituição <span class="sort-icon">▼</span></th>
+                                    <th data-sort="desc_instituicao_lotacao" data-order="asc" onclick="sortTable('servidores', 'desc_instituicao_lotacao')">Órgão/Instituição <span class="sort-icon">▼</span></th>
                                     <th data-sort="nmefetivo" data-order="asc" onclick="sortTable('servidores', 'nmefetivo')">Cargo Efetivo <span class="sort-icon">▼</span></th>
                                     <th data-sort="carga_horaria" data-order="asc" onclick="sortTable('servidores', 'carga_horaria')">Carga Horária <span class="sort-icon">▼</span></th>
                                     <th data-sort="descsitserv" data-order="asc" onclick="sortTable('servidores', 'descsitserv')">Situação <span class="sort-icon">▼</span></th>
@@ -1667,9 +1632,7 @@
                     };
                 }).filter(item => item.ano_mes);
 
-                filteredData = [...servidoresData];
-                
-                // Determinar ano e mês mais recentes
+                // Filtrar dados pelo mês/ano mais recente por padrão
                 if (servidoresData.length > 0) {
                     const ultimoAnoMes = servidoresData
                         .map(item => item.ano_mes)
@@ -1678,9 +1641,14 @@
                     
                     currentYear = ultimoAnoMes.substring(0, 4);
                     currentMonth = ultimoAnoMes.substring(4, 6);
+                    
+                    filteredData = servidoresData.filter(servidor => 
+                        servidor._ano === currentYear && servidor._mes === currentMonth
+                    );
                 } else {
                     currentYear = '2024';
                     currentMonth = '11';
+                    filteredData = [...servidoresData];
                 }
                 
                 // Atualizar meses disponíveis
@@ -1692,16 +1660,12 @@
                 updateDashboard1();
                 updateDashboard2();
                 updateFilterOptions();
-                
-                // Atualizar as novas tabelas simples
-                updateTabelaVisaoGeral();
-                updateTabelaDetalhada();
 
                 // Atualizar informações do arquivo
                 document.getElementById('arquivoAtual').textContent = `servidores_detalhado.csv`;
                 document.getElementById('arquivoFooter').textContent = `servidores_detalhado.csv`;
 
-                console.log(`✅ Dados carregados: ${servidoresData.length} servidores`);
+                console.log(`✅ Dados carregados: ${servidoresData.length} servidores, ${filteredData.length} no período atual`);
                 
             } catch (error) {
                 console.error('❌ Erro ao carregar dados CSV:', error);
@@ -1724,14 +1688,14 @@
         // ============================================
         function gerarDadosVisaoGeralExemplo() {
             return [
-                { sigla: "SEPLAG", orgao: "Secretaria de Estado de Planejamento e Gestão", total: 2450 },
-                { sigla: "SEDESE", orgao: "Secretaria de Estado de Desenvolvimento Social", total: 1800 },
-                { sigla: "SES", orgao: "Secretaria de Estado de Saúde", total: 3200 },
-                { sigla: "SEE", orgao: "Secretaria de Estado de Educação", total: 4100 },
-                { sigla: "SEGOV", orgao: "Secretaria de Estado de Governo", total: 850 },
-                { sigla: "SEFAZ", orgao: "Secretaria de Estado de Fazenda", total: 2200 },
-                { sigla: "SEDIN", orgao: "Secretaria de Estado de Desenvolvimento Econômico", total: 950 },
-                { sigla: "SEMAD", orgao: "Secretaria de Estado de Meio Ambiente", total: 650 }
+                { sigla: "SEPLAG", desc_instituicao_lotacao: "Secretaria de Estado de Planejamento e Gestão", total: 2450 },
+                { sigla: "SEDESE", desc_instituicao_lotacao: "Secretaria de Estado de Desenvolvimento Social", total: 1800 },
+                { sigla: "SES", desc_instituicao_lotacao: "Secretaria de Estado de Saúde", total: 3200 },
+                { sigla: "SEE", desc_instituicao_lotacao: "Secretaria de Estado de Educação", total: 4100 },
+                { sigla: "SEGOV", desc_instituicao_lotacao: "Secretaria de Estado de Governo", total: 850 },
+                { sigla: "SEFAZ", desc_instituicao_lotacao: "Secretaria de Estado de Fazenda", total: 2200 },
+                { sigla: "SEDIN", desc_instituicao_lotacao: "Secretaria de Estado de Desenvolvimento Econômico", total: 950 },
+                { sigla: "SEMAD", desc_instituicao_lotacao: "Secretaria de Estado de Meio Ambiente", total: 650 }
             ];
         }
 
@@ -1821,10 +1785,11 @@
                 _mes: item.ano_mes ? item.ano_mes.substring(4, 6) : '11'
             }));
 
-            filteredData = [...servidoresData];
-            
             currentYear = '2024';
             currentMonth = '11';
+            filteredData = servidoresData.filter(servidor => 
+                servidor._ano === currentYear && servidor._mes === currentMonth
+            );
             
             // Atualizar meses disponíveis
             MESES_DISPONIVEIS = [
@@ -1839,10 +1804,6 @@
             updateDashboard1();
             updateDashboard2();
             updateFilterOptions();
-            
-            // Atualizar as novas tabelas simples
-            updateTabelaVisaoGeral();
-            updateTabelaDetalhada();
 
             // Atualizar informações do arquivo
             document.getElementById('arquivoAtual').textContent = `dados_exemplo_${currentYear}${currentMonth}`;
@@ -2063,9 +2024,9 @@
         // CONFIGURAR EVENT LISTENERS
         // ============================================
         function setupEventListeners() {
-            // Carregar dados CSV
-            document.getElementById('carregarDados').addEventListener('click', async function() {
-                await carregarDadosCSV();
+            // Dashboard 1 - Aplicar filtros
+            document.getElementById('carregarDados').addEventListener('click', function() {
+                applyFilterDashboard1();
             });
             
             // Dashboard 1 - Limpar filtros
@@ -2080,8 +2041,6 @@
                 );
                 
                 updateDashboard1();
-                updateTabelaVisaoGeral();
-                updateTabelaDetalhada();
             });
             
             // Dashboard 2 - Pesquisar
@@ -2157,13 +2116,6 @@
                 if (mesSelect.value === '' && mesesParaAno.length > 0) {
                     mesSelect.value = mesesParaAno[0].mes;
                 }
-                
-                // Aplicar filtro
-                applyFilterDashboard1();
-            });
-            
-            document.getElementById('mesSelect').addEventListener('change', function() {
-                applyFilterDashboard1();
             });
             
             // Filtros de ano e mês Dashboard 2
@@ -2219,8 +2171,6 @@
             });
             
             updateDashboard1();
-            updateTabelaVisaoGeral();
-            updateTabelaDetalhada();
         }
 
         function applyFiltersDashboard2() {
@@ -2334,87 +2284,6 @@
         }
 
         // ============================================
-        // FUNÇÕES PARA AS NOVAS TABELAS SIMPLES
-        // ============================================
-        function updateTabelaVisaoGeral() {
-            const tbody = document.querySelector('#tabela-visao-geral tbody');
-            if (!tbody) return;
-            
-            let rowsHTML = '';
-            
-            if (visaoGeralData && visaoGeralData.length > 0) {
-                // Usar dados carregados do CSV
-                visaoGeralData.forEach(item => {
-                    rowsHTML += `
-                        <tr>
-                            <td>${item.sigla || ''}</td>
-                            <td>${item.orgao || item.desc_instituicao_lotacao || ''}</td>
-                            <td>${item.total || 0}</td>
-                        </tr>
-                    `;
-                });
-            } else if (filteredData && filteredData.length > 0) {
-                // Gerar dados dos servidores filtrados
-                const grupos = {};
-                filteredData.forEach(servidor => {
-                    const sigla = servidor.sigla_instituicao_lotacao || '';
-                    const orgao = servidor.desc_instituicao_lotacao || 'Não informado';
-                    
-                    const key = sigla + '|' + orgao;
-                    if (!grupos[key]) {
-                        grupos[key] = {
-                            sigla: sigla,
-                            orgao: orgao,
-                            total: 0
-                        };
-                    }
-                    grupos[key].total++;
-                });
-                
-                Object.values(grupos).sort((a, b) => b.total - a.total).forEach(item => {
-                    rowsHTML += `
-                        <tr>
-                            <td>${item.sigla}</td>
-                            <td>${item.orgao}</td>
-                            <td>${item.total}</td>
-                        </tr>
-                    `;
-                });
-            } else {
-                rowsHTML = '<tr><td colspan="3" class="text-center text-muted">Nenhum dado disponível</td></tr>';
-            }
-            
-            tbody.innerHTML = rowsHTML;
-        }
-
-        function updateTabelaDetalhada() {
-            const tbody = document.querySelector('#tabela-detalhada tbody');
-            if (!tbody) return;
-            
-            let rowsHTML = '';
-            
-            if (filteredData && filteredData.length > 0) {
-                // Usar dados filtrados
-                filteredData.slice(0, 50).forEach(servidor => {
-                    rowsHTML += `
-                        <tr>
-                            <td>${servidor.masp || ''}</td>
-                            <td>${servidor.nome || ''}</td>
-                            <td>${servidor.desc_instituicao_lotacao || ''}</td>
-                            <td>${servidor.nmefetivo || ''}</td>
-                            <td>${servidor.carga_horaria || 0}h</td>
-                            <td>${servidor.descsitserv || ''}</td>
-                        </tr>
-                    `;
-                });
-            } else {
-                rowsHTML = '<tr><td colspan="6" class="text-center text-muted">Nenhum dado disponível</td></tr>';
-            }
-            
-            tbody.innerHTML = rowsHTML;
-        }
-
-        // ============================================
         // DASHBOARD 1: VISÃO GERAL
         // ============================================
         function updateDashboard1() {
@@ -2485,9 +2354,9 @@
             const paginationInfo = document.getElementById('paginationInfoDashboard1');
             
             if (!filteredData || filteredData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Nenhum dado encontrado para o período atual.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nenhum dado encontrado para o período atual.</td></tr>';
                 tfoot.innerHTML = '';
-                if (countElement) countElement.textContent = '0 registros';
+                if (countElement) countElement.textContent = '0 instituições';
                 if (paginationInfo) paginationInfo.textContent = 'Mostrando 0-0 de 0 registros';
                 updatePaginationDashboard1(1, 1);
                 return;
@@ -2495,17 +2364,18 @@
             
             const grupos = {};
             filteredData.forEach(servidor => {
-                const instituicao = servidor.desc_instituicao_lotacao || 'Não informado';
                 const sigla = servidor.sigla_instituicao_lotacao || '';
+                const instituicao = servidor.desc_instituicao_lotacao || 'Não informado';
                 
-                if (!grupos[instituicao]) {
-                    grupos[instituicao] = {
-                        sigla_instituicao: sigla,
-                        desc_instituicao: instituicao,
+                const key = sigla + '|' + instituicao;
+                if (!grupos[key]) {
+                    grupos[key] = {
+                        sigla: sigla,
+                        instituicao: instituicao,
                         count: 0
                     };
                 }
-                grupos[instituicao].count++;
+                grupos[key].count++;
             });
             
             let resumoArray = Object.values(grupos);
@@ -2514,9 +2384,9 @@
                 const order = currentSortDashboard1.order === 'asc' ? 1 : -1;
                 
                 if (currentSortDashboard1.column === 'sigla_instituicao') {
-                    return order * (a.sigla_instituicao || '').localeCompare(b.sigla_instituicao || '');
+                    return order * (a.sigla || '').localeCompare(b.sigla || '');
                 } else if (currentSortDashboard1.column === 'desc_instituicao') {
-                    return order * a.desc_instituicao.localeCompare(b.desc_instituicao);
+                    return order * a.instituicao.localeCompare(b.instituicao);
                 } else if (currentSortDashboard1.column === 'quantidade') {
                     return order * (a.count - b.count);
                 }
@@ -2535,21 +2405,29 @@
             const rowsHTML = currentData.map(item => {
                 return `
                 <tr>
-                    <td>${item.sigla_instituicao || '-'}</td>
+                    <td>${item.sigla || '-'}</td>
                     <td>
-                        <a href="#" onclick="filtrarPorInstituicao('${item.desc_instituicao}')" class="orgao-link" title="Clique para filtrar por esta instituição">
-                            ${item.desc_instituicao}
+                        <a href="#" onclick="filtrarPorInstituicao('${item.instituicao.replace(/'/g, "\\'")}')" class="orgao-link" title="Clique para filtrar por esta instituição">
+                            ${item.instituicao}
                         </a>
                     </td>
                     <td>${item.count.toLocaleString('pt-BR')}</td>
+                    <td class="actions-column">
+                        <div class="action-buttons">
+                            <button class="btn-action btn-search" onclick="filtrarPorInstituicao('${item.instituicao.replace(/'/g, "\\'")}')" title="Pesquisar servidores desta instituição">
+                                <i class="fas fa-search"></i><span>Pesquisar</span>
+                            </button>
+                        </div>
+                    </td>
                 </tr>
             `}).join('');
             
             const footerHTML = `
                 <tr class="table-total-row">
-                    <td><strong>TOTAL GERAL (${totalInstituicoes} instituições)</strong></td>
-                    <td><strong>-</strong></td>
+                    <td><strong>TOTAL GERAL</strong></td>
+                    <td><strong>${totalInstituicoes} instituições</strong></td>
                     <td><strong>${totalServidores.toLocaleString('pt-BR')}</strong></td>
+                    <td></td>
                 </tr>
             `;
             
@@ -2626,11 +2504,14 @@
         window.changePageDashboard1 = function(page) {
             const grupos = {};
             filteredData.forEach(servidor => {
+                const sigla = servidor.sigla_instituicao_lotacao || '';
                 const instituicao = servidor.desc_instituicao_lotacao || 'Não informado';
-                if (!grupos[instituicao]) {
-                    grupos[instituicao] = { servidores: [] };
+                
+                const key = sigla + '|' + instituicao;
+                if (!grupos[key]) {
+                    grupos[key] = { count: 0 };
                 }
-                grupos[instituicao].servidores.push(servidor);
+                grupos[key].count++;
             });
             
             const totalItems = Object.keys(grupos).length;
@@ -2896,8 +2777,8 @@
                     return order * (a.masp || '').toString().localeCompare((b.masp || '').toString());
                 } else if (currentSortDashboard2.column === 'nome') {
                     return order * (a.nome || '').localeCompare(b.nome || '');
-                } else if (currentSortDashboard2.column === 'sigla_instituicao_lotacao') {
-                    return order * (a.sigla_instituicao_lotacao || '').localeCompare(b.sigla_instituicao_lotacao || '');
+                } else if (currentSortDashboard2.column === 'desc_instituicao_lotacao') {
+                    return order * (a.desc_instituicao_lotacao || '').localeCompare(b.desc_instituicao_lotacao || '');
                 } else if (currentSortDashboard2.column === 'nmefetivo') {
                     return order * (a.nmefetivo || '').localeCompare(b.nmefetivo || '');
                 } else if (currentSortDashboard2.column === 'carga_horaria') {
@@ -3265,20 +3146,21 @@
             
             const grupos = {};
             filteredData.forEach(servidor => {
-                const instituicao = servidor.desc_instituicao_lotacao || 'Não informado';
                 const sigla = servidor.sigla_instituicao_lotacao || '';
+                const instituicao = servidor.desc_instituicao_lotacao || 'Não informado';
                 
-                if (!grupos[instituicao]) {
-                    grupos[instituicao] = {
+                const key = sigla + '|' + instituicao;
+                if (!grupos[key]) {
+                    grupos[key] = {
                         sigla: sigla,
                         instituicao: instituicao,
                         count: 0
                     };
                 }
-                grupos[instituicao].count++;
+                grupos[key].count++;
             });
             
-            const headers = ['Sigla Instituição', 'Instituição de Lotação', 'Quantidade de Servidores'];
+            const headers = ['Sigla', 'Órgão/Instituição', 'Quantidade de Servidores'];
             const data = Object.values(grupos).map(info => [
                 info.sigla,
                 info.instituicao,
