@@ -972,8 +972,430 @@
         <!-- ==================== CONTEÚDO DAS ABAS ==================== -->
         <div class="tab-content" id="dashboardTabsContent">
             
-            <!-- TODOS OS CONTEÚDOS DAS ABAS MANTIDOS -->
-            <!-- ... copie todo o conteúdo HTML das abas da versão anterior ... -->
+            <!-- DASHBOARD 1: VISÃO GERAL -->
+            <div class="tab-pane fade show active" id="dashboard1" role="tabpanel">
+                
+                <!-- ==================== FILTROS DO DASHBOARD 1 ==================== -->
+                <div class="filter-container">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label class="filter-label">Ano de Referência</label>
+                            <select class="form-select" id="anoSelect">
+                                <option value="">Carregando...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="filter-label">Mês de Referência</label>
+                            <select class="form-select" id="mesSelect">
+                                <option value="">Carregando...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn-primary-custom w-100" id="carregarDados">
+                                <i class="fas fa-sync-alt me-2"></i>Carregar Dados
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ==================== CARDS DE RESUMO ==================== -->
+                <div class="row" id="summaryCards">
+                    <!-- Cards serão inseridos por JavaScript -->
+                </div>
+                
+                <!-- ==================== GRÁFICOS ==================== -->
+                <div class="row mb-4">
+                    <div class="col-lg-4">
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h6 class="chart-title">Distribuição por Instituição (Top 8)</h6>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="chartInstituicao"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h6 class="chart-title">Cargos Mais Comuns (Top 8)</h6>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="chartCargo"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h6 class="chart-title">Distribuição por Carga Horária</h6>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="chartCargaHoraria"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ==================== TABELA DE VISÃO GERAL ==================== -->
+                <div class="table-container">
+                    <div class="table-header">
+                        <h5 class="table-title"><i class="fas fa-university me-2"></i>Visão Geral por Instituição</h5>
+                        <span class="table-badge" id="resumoCountDashboard1">0 instituições</span>
+                    </div>
+                    
+                    <div class="actions-container">
+                        <div>
+                            <div class="search-box-container">
+                                <label for="instituicaoDashboard1">Filtrar por Instituição:</label>
+                                <input type="text" id="instituicaoDashboard1" list="instituicoesListDashboard1" placeholder="Digite o nome da instituição...">
+                                <datalist id="instituicoesListDashboard1"></datalist>
+                            </div>
+                        </div>
+                        <div class="export-buttons">
+                            <button class="btn-export" id="limparFiltros">
+                                <i class="fas fa-times"></i> Limpar Filtros
+                            </button>
+                            <button class="btn-export" id="exportCSVDashboard1">
+                                <i class="fas fa-download"></i> Exportar CSV
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-fixed-header-container">
+                        <table class="table table-hover" id="visaoGeralTable">
+                            <thead>
+                                <tr>
+                                    <th data-sort="sigla_instituicao" onclick="sortTable('visaoGeral', 'sigla_instituicao')">
+                                        Sigla <span class="sort-icon">▼</span>
+                                    </th>
+                                    <th data-sort="desc_instituicao" onclick="sortTable('visaoGeral', 'desc_instituicao')">
+                                        Instituição de Lotação <span class="sort-icon">▼</span>
+                                    </th>
+                                    <th data-sort="quantidade" onclick="sortTable('visaoGeral', 'quantidade')">
+                                        Quantidade <span class="sort-icon">▼</span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="resumoTableBody">
+                                <!-- Dados serão inseridos por JavaScript -->
+                            </tbody>
+                            <tfoot id="resumoTableFooter"></tfoot>
+                        </table>
+                    </div>
+                    
+                    <div class="pagination-container">
+                        <div class="pagination-info" id="paginationInfoDashboard1">
+                            Mostrando 0-0 de 0 registros
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="items-per-page">
+                                Itens por página:
+                                <select id="itemsPerPageDashboard1">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50" selected>50</option>
+                                    <option value="100">100</option>
+                                    <option value="200">200</option>
+                                </select>
+                            </div>
+                            <nav aria-label="Navegação da tabela">
+                                <ul class="pagination mb-0 ms-3" id="paginationDashboard1">
+                                    <!-- Paginação será inserida por JavaScript -->
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ==================== TABELA SIMPLES VISÃO GERAL ==================== -->
+                <div class="table-container mt-4">
+                    <div class="table-header">
+                        <h5 class="table-title"><i class="fas fa-table me-2"></i>Tabela Resumo (JSON Local)</h5>
+                        <span class="table-badge">Dados Locais</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="tabela-visao-geral">
+                            <thead>
+                                <tr>
+                                    <th>Sigla</th>
+                                    <th>Nome</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dados serão inseridos por app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <!-- DASHBOARD 2: CONSULTA INDIVIDUAL -->
+            <div class="tab-pane fade" id="dashboard2" role="tabpanel">
+                
+                <!-- ==================== FILTROS DO DASHBOARD 2 ==================== -->
+                <div class="filter-container">
+                    <div class="row g-3">
+                        <div class="col-md-2">
+                            <label class="filter-label">Ano</label>
+                            <select class="form-select" id="anoDashboard2">
+                                <option value="">Carregando...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="filter-label">Mês</label>
+                            <select class="form-select" id="mesDashboard2">
+                                <option value="">Carregando...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="filter-label">Instituição</label>
+                            <input type="text" class="form-control" id="instituicaoDashboard2" list="instituicoesListDashboard2" placeholder="Digite a instituição...">
+                            <datalist id="instituicoesListDashboard2"></datalist>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="filter-label">Nome do Servidor</label>
+                            <input type="text" class="form-control" id="nomeServidor" placeholder="Digite o nome...">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="filter-label">MASP</label>
+                            <input type="text" class="form-control" id="maspDashboard2" placeholder="Digite o MASP...">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="filter-label">Cargo</label>
+                            <input type="text" class="form-control" id="cargoDashboard2" list="cargosListDashboard2" placeholder="Digite o cargo...">
+                            <datalist id="cargosListDashboard2"></datalist>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="filter-label">Situação</label>
+                            <input type="text" class="form-control" id="situacaoDashboard2" list="situacoesListDashboard2" placeholder="Digite a situação...">
+                            <datalist id="situacoesListDashboard2"></datalist>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="filter-label" style="opacity: 0;">.</label>
+                            <button class="btn-primary-custom w-100" id="pesquisarServidores">
+                                <i class="fas fa-search me-2"></i>Pesquisar
+                            </button>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="filter-label" style="opacity: 0;">.</label>
+                            <button class="btn-secondary-custom w-100" id="limparFiltrosDashboard2">
+                                <i class="fas fa-times me-2"></i>Limpar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ==================== BUSCA RÁPIDA ==================== -->
+                <div class="actions-container">
+                    <div class="search-box-container">
+                        <label for="searchServidores">Busca Rápida (em todos os campos):</label>
+                        <input type="text" id="searchServidores" placeholder="Digite para buscar...">
+                    </div>
+                    <div class="export-buttons">
+                        <button class="btn-export" id="exportCSVDashboard2">
+                            <i class="fas fa-download me-2"></i>Exportar CSV
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- ==================== TABELA DE SERVIDORES ==================== -->
+                <div class="table-container">
+                    <div class="table-header">
+                        <h5 class="table-title"><i class="fas fa-user-tie me-2"></i>Consulta de Servidores</h5>
+                        <span class="table-badge" id="resumoCountDashboard2">0 servidores</span>
+                    </div>
+                    
+                    <div class="table-fixed-header-container">
+                        <table class="table table-hover" id="servidoresTable">
+                            <thead>
+                                <tr>
+                                    <th data-sort="masp" onclick="sortTable('servidores', 'masp')">
+                                        MASP <span class="sort-icon">▼</span>
+                                    </th>
+                                    <th data-sort="nome" onclick="sortTable('servidores', 'nome')">
+                                        Nome <span class="sort-icon">▼</span>
+                                    </th>
+                                    <th data-sort="sigla_instituicao_lotacao" onclick="sortTable('servidores', 'sigla_instituicao_lotacao')">
+                                        Instituição <span class="sort-icon">▼</span>
+                                    </th>
+                                    <th data-sort="nmefetivo" onclick="sortTable('servidores', 'nmefetivo')">
+                                        Cargo <span class="sort-icon">▼</span>
+                                    </th>
+                                    <th data-sort="carga_horaria" onclick="sortTable('servidores', 'carga_horaria')">
+                                        Carga Horária <span class="sort-icon">▼</span>
+                                    </th>
+                                    <th data-sort="descsitserv" onclick="sortTable('servidores', 'descsitserv')">
+                                        Situação <span class="sort-icon">▼</span>
+                                    </th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="servidoresTableBody">
+                                <!-- Dados serão inseridos por JavaScript -->
+                            </tbody>
+                            <tfoot id="servidoresTableFooter"></tfoot>
+                        </table>
+                    </div>
+                    
+                    <div class="pagination-container">
+                        <div class="pagination-info" id="paginationInfoDashboard2">
+                            Mostrando 0-0 de 0 registros
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="items-per-page">
+                                Itens por página:
+                                <select id="itemsPerPageDashboard2">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50" selected>50</option>
+                                    <option value="100">100</option>
+                                    <option value="200">200</option>
+                                </select>
+                            </div>
+                            <nav aria-label="Navegação da tabela">
+                                <ul class="pagination mb-0 ms-3" id="paginationDashboard2">
+                                    <!-- Paginação será inserida por JavaScript -->
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ==================== TABELA SIMPLES DETALHADA ==================== -->
+                <div class="table-container mt-4">
+                    <div class="table-header">
+                        <h5 class="table-title"><i class="fas fa-table me-2"></i>Tabela Detalhada (JSON Local)</h5>
+                        <span class="table-badge">Dados Locais</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="tabela-detalhada">
+                            <thead>
+                                <tr>
+                                    <th>MASP</th>
+                                    <th>Nome</th>
+                                    <th>Órgão</th>
+                                    <th>Cargo</th>
+                                    <th>Carga Horária</th>
+                                    <th>Situação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dados serão inseridos por app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <!-- DASHBOARD 3: DOWNLOADS -->
+            <div class="tab-pane fade" id="dashboard3" role="tabpanel">
+                
+                <!-- ==================== DOWNLOAD DE ARQUIVOS ==================== -->
+                <div class="filter-container">
+                    <h5 class="mb-3"><i class="fas fa-download me-2"></i>Download de Arquivos CSV</h5>
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label class="filter-label">Selecione o Ano</label>
+                            <select class="form-select" id="anoDownload">
+                                <option value="">Selecione um ano...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="filter-label">Selecione o Mês</label>
+                            <select class="form-select" id="mesDownload">
+                                <option value="">Selecione um mês...</option>
+                                <option value="01">Janeiro</option>
+                                <option value="02">Fevereiro</option>
+                                <option value="03">Março</option>
+                                <option value="04">Abril</option>
+                                <option value="05">Maio</option>
+                                <option value="06">Junho</option>
+                                <option value="07">Julho</option>
+                                <option value="08">Agosto</option>
+                                <option value="09">Setembro</option>
+                                <option value="10">Outubro</option>
+                                <option value="11">Novembro</option>
+                                <option value="12">Dezembro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn-primary-custom w-100" id="downloadMesCSV">
+                                <i class="fas fa-file-download me-2"></i>Baixar CSV Completo
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Nota:</strong> Os dados são obtidos diretamente do portal de dados abertos do Governo de Minas Gerais (DataStore CKAN). Cada download contém a relação nominal completa do mês selecionado.
+                        </div>
+                        
+                        <button class="btn-secondary-custom" id="verArquivosCSV">
+                            <i class="fas fa-list me-2"></i>Ver Lista de Arquivos Disponíveis
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- ==================== INFORMAÇÕES ==================== -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card-stats">
+                            <i class="fas fa-database fa-2x mb-3" style="color: var(--accent-blue);"></i>
+                            <div class="value" id="totalArquivosDisponiveis">0</div>
+                            <div class="label">Arquivos Disponíveis no CKAN</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card-stats">
+                            <i class="fas fa-calendar-alt fa-2x mb-3" style="color: var(--accent-blue);"></i>
+                            <div class="value" id="periodoCobertura">-</div>
+                            <div class="label">Período de Cobertura</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ==================== LEGISLAÇÃO ==================== -->
+                <div class="filter-container mt-4">
+                    <h5 class="mb-3"><i class="fas fa-gavel me-2"></i>Legislação e Transparência</h5>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Lei de Acesso à Informação:</strong> Esta relação nominal é publicada em conformidade com a Lei Federal nº 12.527/2011 (Lei de Acesso à Informação) e a legislação estadual de Minas Gerais.
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-file-alt me-2"></i> Formato dos Dados</span>
+                                    <span class="badge bg-primary rounded-pill">CSV</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-calendar me-2"></i> Atualização</span>
+                                    <span class="badge bg-success rounded-pill">Mensal</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-database me-2"></i> Fonte Primária</span>
+                                    <span class="badge bg-info rounded-pill">CKAN MG</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span><i class="fas fa-code me-2"></i> Licença</span>
+                                    <span class="badge bg-secondary rounded-pill">Dados Abertos</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
             
         </div>
     </div>
@@ -1058,7 +1480,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-
         // ============================================
         // VARIÁVEIS GLOBAIS
         // ============================================
@@ -1147,6 +1568,8 @@
         // Variáveis globais
         let RECURSOS_POR_MES = {};
         let MESES_DISPONIVEIS = [];
+        let servidoresData = [];
+        let filteredData = [];
 
         // ============================================
         // FUNÇÃO BASE PARA CONSULTAR O DATASTORE
@@ -1279,13 +1702,18 @@
                 updateDashboard2();
                 updateFilterOptions();
                 
-                // 8. Atualizar as novas tabelas simples
-                updateTabelaVisaoGeral();
-                updateTabelaDetalhada();
-
-                // 9. Atualizar informações do arquivo
+                // 8. Atualizar informações do arquivo
                 document.getElementById('arquivoAtual').textContent = `dados_serv_${currentYear}${currentMonth}`;
                 document.getElementById('arquivoFooter').textContent = `dados_serv_${currentYear}${currentMonth}`;
+                document.getElementById('totalArquivosDisponiveis').textContent = MESES_DISPONIVEIS.length;
+                
+                // Calcular período de cobertura
+                if (MESES_DISPONIVEIS.length > 0) {
+                    const primeiro = MESES_DISPONIVEIS[MESES_DISPONIVEIS.length - 1];
+                    const ultimo = MESES_DISPONIVEIS[0];
+                    document.getElementById('periodoCobertura').textContent = 
+                        `${primeiro.mes}/${primeiro.ano} - ${ultimo.mes}/${ultimo.ano}`;
+                }
 
                 console.log(`🎉 CARREGAMENTO COMPLETO: ${servidoresData.length} servidores carregados do CKAN`);
                 
@@ -1398,16 +1826,6 @@
                 option.value = ano;
                 option.textContent = ano;
                 anoDownload.appendChild(option);
-            });
-            
-            // Dashboard 3 - Download Mês
-            const mesDownload = document.getElementById('mesDownload');
-            mesDownload.innerHTML = '<option value="">Selecione um mês...</option>';
-            Object.entries(monthNames).forEach(([mesNum, mesNome]) => {
-                const option = document.createElement('option');
-                option.value = mesNum;
-                option.textContent = mesNome;
-                mesDownload.appendChild(option);
             });
         }
 
@@ -1595,10 +2013,6 @@
                     updateDashboard2();
                     updateFilterOptions();
                     
-                    // Atualizar as novas tabelas simples
-                    updateTabelaVisaoGeral();
-                    updateTabelaDetalhada();
-
                     // Atualizar informações do arquivo
                     document.getElementById('arquivoAtual').textContent = `dados_serv_${ano}${mes}`;
                     document.getElementById('arquivoFooter').textContent = `dados_serv_${ano}${mes}`;
@@ -1618,8 +2032,6 @@
                 document.getElementById('instituicaoDashboard1').value = '';
                 filteredData = [...servidoresData];
                 updateDashboard1();
-                updateTabelaVisaoGeral();
-                updateTabelaDetalhada();
             });
             
             // Dashboard 2 - Pesquisar
@@ -1671,101 +2083,6 @@
             window.carregarDadosAtuais = function() {
                 carregarDadosMaisRecentes();
             };
-        }
-
-        // ============================================
-        // FUNÇÕES PARA AS NOVAS TABELAS SIMPLES
-        // ============================================
-        function updateTabelaVisaoGeral() {
-            const tbody = document.querySelector('#tabela-visao-geral tbody');
-            if (!tbody) return;
-            
-            let rowsHTML = '';
-            
-            if (visaoGeralData && visaoGeralData.length > 0) {
-                // Usar dados carregados do JSON
-                visaoGeralData.forEach(item => {
-                    rowsHTML += `
-                        <tr>
-                            <td>${item.sigla || ''}</td>
-                            <td>${item.orgao || ''}</td>
-                            <td>${item.total || 0}</td>
-                        </tr>
-                    `;
-                });
-            } else if (filteredData && filteredData.length > 0) {
-                // Gerar dados dos servidores filtrados
-                const grupos = {};
-                filteredData.forEach(servidor => {
-                    const sigla = servidor.sigla_instituicao_lotacao || '';
-                    const orgao = servidor.desc_instituicao_lotacao || 'Não informado';
-                    
-                    const key = sigla + '|' + orgao;
-                    if (!grupos[key]) {
-                        grupos[key] = {
-                            sigla: sigla,
-                            orgao: orgao,
-                            total: 0
-                        };
-                    }
-                    grupos[key].total++;
-                });
-                
-                Object.values(grupos).sort((a, b) => b.total - a.total).forEach(item => {
-                    rowsHTML += `
-                        <tr>
-                            <td>${item.sigla}</td>
-                            <td>${item.orgao}</td>
-                            <td>${item.total}</td>
-                        </tr>
-                    `;
-                });
-            } else {
-                rowsHTML = '<tr><td colspan="3" class="text-center text-muted">Nenhum dado disponível</td></tr>';
-            }
-            
-            tbody.innerHTML = rowsHTML;
-        }
-
-        function updateTabelaDetalhada() {
-            const tbody = document.querySelector('#tabela-detalhada tbody');
-            if (!tbody) return;
-            
-            let rowsHTML = '';
-            
-            if (detalhadoData && detalhadoData.length > 0) {
-                // Usar dados carregados do JSON
-                detalhadoData.slice(0, 50).forEach(servidor => {
-                    rowsHTML += `
-                        <tr>
-                            <td>${servidor.masp || ''}</td>
-                            <td>${servidor.nome || ''}</td>
-                            <td>${servidor.desc_instituicao_lotacao || ''}</td>
-                            <td>${servidor.nmefetivo || ''}</td>
-                            <td>${servidor.carga_horaria || 0}h</td>
-                            <td>${servidor.descsitserv || ''}</td>
-                        </tr>
-                    `;
-                });
-            } else if (filteredData && filteredData.length > 0) {
-                // Usar dados filtrados
-                filteredData.slice(0, 50).forEach(servidor => {
-                    rowsHTML += `
-                        <tr>
-                            <td>${servidor.masp || ''}</td>
-                            <td>${servidor.nome || ''}</td>
-                            <td>${servidor.desc_instituicao_lotacao || ''}</td>
-                            <td>${servidor.nmefetivo || ''}</td>
-                            <td>${servidor.carga_horaria || 0}h</td>
-                            <td>${servidor.descsitserv || ''}</td>
-                        </tr>
-                    `;
-                });
-            } else {
-                rowsHTML = '<tr><td colspan="6" class="text-center text-muted">Nenhum dado disponível</td></tr>';
-            }
-            
-            tbody.innerHTML = rowsHTML;
         }
 
         // ============================================
@@ -2384,6 +2701,117 @@
         };
 
         // ============================================
+        // FUNÇÕES DE FILTRO DASHBOARD 2
+        // ============================================
+        function applyFiltersDashboard2() {
+            const ano = document.getElementById('anoDashboard2').value;
+            const mes = document.getElementById('mesDashboard2').value;
+            const instituicao = document.getElementById('instituicaoDashboard2').value;
+            const nome = document.getElementById('nomeServidor').value;
+            const masp = document.getElementById('maspDashboard2').value;
+            const cargo = document.getElementById('cargoDashboard2').value;
+            const situacao = document.getElementById('situacaoDashboard2').value;
+            
+            filteredData = servidoresData.filter(servidor => {
+                // Filtro por ano/mês
+                if (ano && servidor.ano_mes && !servidor.ano_mes.startsWith(ano)) {
+                    return false;
+                }
+                if (mes && servidor.ano_mes && !servidor.ano_mes.endsWith(mes)) {
+                    return false;
+                }
+                
+                // Filtro por instituição
+                if (instituicao && instituicao !== 'all') {
+                    const instLower = instituicao.toLowerCase();
+                    const servInst = servidor.desc_instituicao_lotacao ? servidor.desc_instituicao_lotacao.toLowerCase() : '';
+                    const servSigla = servidor.sigla_instituicao_lotacao ? servidor.sigla_instituicao_lotacao.toLowerCase() : '';
+                    
+                    if (!servInst.includes(instLower) && !servSigla.includes(instLower)) {
+                        return false;
+                    }
+                }
+                
+                // Filtro por nome
+                if (nome) {
+                    const nomeLower = nome.toLowerCase();
+                    const servNome = servidor.nome ? servidor.nome.toLowerCase() : '';
+                    if (!servNome.includes(nomeLower)) {
+                        return false;
+                    }
+                }
+                
+                // Filtro por MASP
+                if (masp) {
+                    const maspStr = servidor.masp ? servidor.masp.toString() : '';
+                    if (!maspStr.includes(masp)) {
+                        return false;
+                    }
+                }
+                
+                // Filtro por cargo
+                if (cargo && cargo !== 'all') {
+                    const cargoLower = cargo.toLowerCase();
+                    const servCargo = servidor.nmefetivo ? servidor.nmefetivo.toLowerCase() : '';
+                    if (!servCargo.includes(cargoLower)) {
+                        return false;
+                    }
+                }
+                
+                // Filtro por situação
+                if (situacao && situacao !== 'all') {
+                    const situacaoLower = situacao.toLowerCase();
+                    const servSituacao = servidor.descsitserv ? servidor.descsitserv.toLowerCase() : '';
+                    if (!servSituacao.includes(situacaoLower)) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            currentPageDashboard2 = 1;
+            updateServidoresTable();
+        }
+
+        function clearDashboard2Filters() {
+            document.getElementById('instituicaoDashboard2').value = '';
+            document.getElementById('nomeServidor').value = '';
+            document.getElementById('maspDashboard2').value = '';
+            document.getElementById('cargoDashboard2').value = '';
+            document.getElementById('situacaoDashboard2').value = '';
+            document.getElementById('searchServidores').value = '';
+            
+            filteredData = [...servidoresData];
+            currentPageDashboard2 = 1;
+            updateServidoresTable();
+        }
+
+        function filterServidoresTable(searchTerm) {
+            if (!searchTerm) {
+                filteredData = [...servidoresData];
+            } else {
+                filteredData = servidoresData.filter(servidor => {
+                    const campos = [
+                        servidor.masp?.toString() || '',
+                        servidor.nome || '',
+                        servidor.desc_instituicao_lotacao || '',
+                        servidor.sigla_instituicao_lotacao || '',
+                        servidor.nmefetivo || '',
+                        servidor.siglaefetivo || '',
+                        servidor.descsitserv || '',
+                        servidor.carga_horaria?.toString() || ''
+                    ];
+                    
+                    return campos.some(campo => campo.toLowerCase().includes(searchTerm));
+                });
+            }
+            
+            currentPageDashboard2 = 1;
+            updateServidoresTable();
+        }
+
+        // ============================================
         // FUNÇÃO PARA MOSTRAR HISTÓRICO
         // ============================================
         window.showEmployeeHistory = function(masp, nome) {
@@ -2686,15 +3114,6 @@
             link.click();
             document.body.removeChild(link);
         }
-
-        // ============================================
-        // MESES DISPONÍVEIS (para dados locais)
-        // ============================================
-        let MESES_DISPONIVEIS = [
-            { anoMes: '202411', ano: '2024', mes: '11' },
-            { anoMes: '202410', ano: '2024', mes: '10' },
-            { anoMes: '202409', ano: '2024', mes: '09' }
-        ];
     </script>
 
     <!-- JS do dashboard -->
