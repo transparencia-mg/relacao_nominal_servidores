@@ -9,6 +9,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
@@ -926,7 +929,7 @@
                         <p class="header-subtitle">Governo do Estado de Minas Gerais - Servidores do Poder Executivo</p>
                         <div class="header-info">
                             <span class="badge-atualizacao-header">
-                                <i class="fas fa-sync-alt"></i> Fonte: DataStore CKAN
+                                <i class="fas fa-sync-alt"></i> Fonte: Dados Locais
                             </span>
                         </div>
                     </div>
@@ -935,7 +938,7 @@
                 <!-- Informação de Fonte de Dados -->
                 <div class="text-end">
                     <div class="btn-export" style="background: rgba(255, 255, 255, 0.2); color: white; border-color: white;">
-                        <i class="fas fa-database me-2"></i> Fonte: DataStore CKAN
+                        <i class="fas fa-database me-2"></i> Fonte: Dados Locais
                     </div>
                     <small class="text-white d-block mt-1" style="font-size: 10px;">Arquivo: <span id="arquivoAtual">Carregando...</span></small>
                 </div>
@@ -1362,8 +1365,8 @@
                                     <h4>Fonte dos Dados</h4>
                                     <p class="text-muted" style="font-size: 13px;">Dados exportados do PostgreSQL do Poder Executivo de MG</p>
                                     <div class="mt-3">
-                                        <button class="btn-export w-100" onclick="carregarDadosAtuais()">
-                                            <i class="fas fa-sync-alt me-2"></i>Carregar Dados Atuais
+                                        <button class="btn-export w-100" onclick="carregarDadosLocais()">
+                                            <i class="fas fa-sync-alt me-2"></i>Carregar Dados Locais
                                         </button>
                                     </div>
                                 </div>
@@ -1450,13 +1453,8 @@
                             
                             <div class="alert alert-info mt-3">
                                 <i class="fas fa-info-circle me-2"></i>
-                                <strong>Fonte dos Dados:</strong> Os dados são carregados de arquivos CSV exportados do banco de dados PostgreSQL. 
-                                Cada arquivo CSV representa um mês específico (ex: dados_serv_202411.csv para Novembro/2024).
-                            </div>
-                            
-                            <div class="alert alert-success mt-2">
-                                <i class="fas fa-database me-2"></i>
-                                <strong>Estrutura:</strong> Os arquivos CSV estão organizados na pasta <code>data/</code> com o formato <code>dados_serv_YYYYMM.csv</code>
+                                <strong>Fonte dos Dados:</strong> Os dados são carregados de arquivos JSON locais. 
+                                Para dados do CKAN, é necessário configurar o datapackage.json.
                             </div>
                         </div>
                     </div>
@@ -1471,14 +1469,14 @@
         <div class="container text-center text-muted">
             <p class="mb-1">
                 <i class="fas fa-database me-2"></i> 
-                Fonte: PostgreSQL CSV — 
+                Fonte: Dados Locais — 
                 Arquivo atual: <span id="arquivoFooter">Carregando...</span>
             </p>
             <p class="mb-0" style="font-size: 0.85rem;">
                 © 2025 Relação Nominal de Servidores - Governo do Estado de Minas Gerais
             </p>
             <p class="mt-2 mb-0 small">
-                Dados exportados do banco PostgreSQL | Dashboard CSVs
+                Dashboard de Dados Locais
             </p>
         </div>
     </footer>
@@ -1534,9 +1532,6 @@
 
     <!-- ==================== SCRIPTS ==================== -->
 
-    <!-- PapaParse -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-    
     <!-- jQuery e DataTables -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -1573,183 +1568,73 @@
         };
 
         // ============================================
-        // URL DO DATAPACKAGE - CORRIGIDA
+        // VARIÁVEIS GLOBAIS DE DADOS
         // ============================================
-        const DATAPACKAGE_URLS = [
-            'docs/datapackage.json',
-            './docs/datapackage.json',
-            'datapackage.json',
-            './datapackage.json'
-        ];
+        let servidoresData = [];
+        let filteredData = [];
+        let visaoGeralData = [];
+        let detalhadoData = [];
 
         // ============================================
-        // FUNÇÃO PARA LER O DATAPACKAGE (COM FALLBACK)
+        // FUNÇÕES PARA CARREGAR DADOS LOCAIS
         // ============================================
-        async function carregarDatapackage() {
-            let lastError = null;
-            
-            // Tentar todas as URLs possíveis
-            for (const url of DATAPACKAGE_URLS) {
-                try {
-                    console.log(`📂 Tentando carregar datapackage de: ${url}`);
-                    const resp = await fetch(url);
-                    
-                    if (!resp.ok) {
-                        console.warn(`❌ Não encontrado em: ${url}`);
-                        continue;
-                    }
-                    
-                    const data = await resp.json();
-                    console.log(`✅ Datapackage carregado de: ${url}`);
-                    return data;
-                } catch (error) {
-                    lastError = error;
-                    console.warn(`⚠️ Erro ao carregar ${url}:`, error.message);
-                }
-            }
-            
-            // Se nenhum arquivo foi encontrado, lançar erro
-            throw new Error('Não foi possível carregar o datapackage.json de nenhum dos caminhos: ' + DATAPACKAGE_URLS.join(', '));
-        }
-
-        // ============================================
-        // MAPA ANO_MES → RESOURCE_ID E LISTA DE MESES DISPONÍVEIS
-        // ============================================
-        function indexarRecursosPorMes(dp) {
-            const mapa = {};
-            const mesesDisponiveis = [];
-
-            dp.resources.forEach(r => {
-                const match = r.name.match(/dados_serv_(\d{6})/);
-                if (match && r.id) {
-                    const anoMes = match[1];
-                    const ano = anoMes.substring(0, 4);
-                    const mes = anoMes.substring(4, 6);
-                    
-                    mapa[anoMes] = r.id;
-                    mesesDisponiveis.push({
-                        anoMes: anoMes,
-                        ano: ano,
-                        mes: mes,
-                        resourceId: r.id
-                    });
-                }
-            });
-
-            // Ordenar por ano/mês (mais recente primeiro)
-            mesesDisponiveis.sort((a, b) => b.anoMes.localeCompare(a.anoMes));
-            
-            return { mapa, mesesDisponiveis };
-        }
-
-        // Variáveis globais
-        let RECURSOS_POR_MES = {};
-        let MESES_DISPONIVEIS = [];
-
-        // ============================================
-        // FUNÇÃO BASE PARA CONSULTAR O DATASTORE
-        // ============================================
-        async function carregarMesDatastore(ano, mes, limit = 5000) {
-            const anoMes = `${ano}${mes}`;
-            const resourceId = RECURSOS_POR_MES[anoMes];
-
-            if (!resourceId) {
-                throw new Error(`Mês ${anoMes} não encontrado no datapackage`);
-            }
-
-            let offset = 0;
-            let todos = [];
-            let total = 0;
-
-            do {
-                const url =
-                    `https://dados.mg.gov.br/api/3/action/datastore_search` +
-                    `?resource_id=${resourceId}` +
-                    `&limit=${limit}` +
-                    `&offset=${offset}`;
-
-                const resp = await fetch(url);
-                const json = await resp.json();
-
-                if (!json.success) {
-                    throw new Error('Erro ao consultar DataStore');
-                }
-
-                todos.push(...json.result.records);
-                total = json.result.total;
-                offset += limit;
-
-                console.log(`📥 ${todos.length}/${total}`);
-            } while (offset < total);
-
-            return todos;
-        }
-
-        // ============================================
-        // FUNÇÃO PARA OBTER O MÊS MAIS RECENTE
-        // ============================================
-        function obterMesMaisRecente(mesesDisponiveis) {
-            if (!mesesDisponiveis || mesesDisponiveis.length === 0) {
-                return null;
-            }
-            
-            // Já está ordenado do mais recente para o mais antigo
-            const maisRecente = mesesDisponiveis[0];
-            return {
-                ano: maisRecente.ano,
-                mes: maisRecente.mes,
-                anoMes: maisRecente.anoMes
-            };
-        }
-
-        // ============================================
-        // FUNÇÃO PARA CARREGAR DADOS DO MÊS MAIS RECENTE
-        // ============================================
-        async function carregarDadosMaisRecentes() {
-            showLoading(true);
-
+        async function fetchJSON(url) {
             try {
-                console.log('📦 Tentando carregar datapackage...');
-                const dp = await carregarDatapackage();
-                const { mapa, mesesDisponiveis } = indexarRecursosPorMes(dp);
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar ${url}: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error(error);
+                throw error;
+            }
+        }
+
+        async function carregarDadosLocais() {
+            showLoading(true);
+            
+            try {
+                console.log('📥 Carregando dados locais...');
                 
-                RECURSOS_POR_MES = mapa;
-                MESES_DISPONIVEIS = mesesDisponiveis;
-                
-                console.log(`📊 Recursos disponíveis: ${MESES_DISPONIVEIS.length} meses`);
-                
-                // Obter o mês mais recente
-                const mesRecente = obterMesMaisRecente(MESES_DISPONIVEIS);
-                
-                if (!mesRecente) {
-                    throw new Error('Nenhum mês disponível no datapackage');
+                // Carregar dados de visão geral
+                try {
+                    visaoGeralData = await fetchJSON('data/visao_geral.json');
+                    console.log(`✅ Visão Geral carregada: ${visaoGeralData.length} registros`);
+                } catch (e) {
+                    console.warn('⚠️ Não foi possível carregar visao_geral.json, usando dados de exemplo');
+                    visaoGeralData = gerarDadosVisaoGeralExemplo();
                 }
                 
-                currentYear = mesRecente.ano;
-                currentMonth = mesRecente.mes;
+                // Carregar dados detalhados
+                try {
+                    detalhadoData = await fetchJSON('data/detalhado.json');
+                    console.log(`✅ Detalhado carregado: ${detalhadoData.length} registros`);
+                } catch (e) {
+                    console.warn('⚠️ Não foi possível carregar detalhado.json, usando dados de exemplo');
+                    detalhadoData = gerarDadosDetalhadoExemplo();
+                }
                 
-                console.log(`📅 Mês mais recente: ${currentMonth}/${currentYear}`);
-                
-                // Carregar os dados
-                console.log('🌐 Carregando dados do DataStore...');
-                const dados = await carregarMesDatastore(currentYear, currentMonth);
-                
-                servidoresData = dados.map(row => ({
-                    ano_mes: row.ano_mes || '',
-                    masp: row.masp || '',
-                    adm: row.adm || '',
-                    nome: row.nome || '',
-                    siglaefetivo: row.siglaefetivo || '',
-                    nmefetivo: row.nmefetivo || '',
-                    carga_horaria: parseInt(row.carga_horaria) || 0,
-                    sigla_instituicao_lotacao: row.sigla_instituicao_lotacao || '',
-                    desc_instituicao_lotacao: row.desc_instituicao_lotacao || '',
-                    descsitserv: row.descsitserv || ''
+                // Converter dados detalhados para o formato do servidor
+                servidoresData = detalhadoData.map(item => ({
+                    ano_mes: item.ano_mes || '202411',
+                    masp: item.masp || '',
+                    adm: item.adm || '',
+                    nome: item.nome || '',
+                    siglaefetivo: item.siglaefetivo || '',
+                    nmefetivo: item.nmefetivo || '',
+                    carga_horaria: parseInt(item.carga_horaria) || 0,
+                    sigla_instituicao_lotacao: item.sigla_instituicao_lotacao || '',
+                    desc_instituicao_lotacao: item.desc_instituicao_lotacao || '',
+                    descsitserv: item.descsitserv || ''
                 }));
 
                 filteredData = [...servidoresData];
-
-                // Atualizar dropdowns com meses disponíveis
+                
+                currentYear = '2024';
+                currentMonth = '11';
+                
+                // Atualizar dropdowns
                 atualizarDropdownsMeses();
                 
                 // Atualizar dashboards
@@ -1762,67 +1647,121 @@
                 updateTabelaDetalhada();
 
                 // Atualizar informações do arquivo
-                document.getElementById('arquivoAtual').textContent = `dados_serv_${currentYear}${currentMonth}`;
-                document.getElementById('arquivoFooter').textContent = `dados_serv_${currentYear}${currentMonth}.csv`;
+                document.getElementById('arquivoAtual').textContent = `dados_locais_${currentYear}${currentMonth}`;
+                document.getElementById('arquivoFooter').textContent = `dados_locais_${currentYear}${currentMonth}`;
 
                 console.log(`✅ Dados carregados: ${servidoresData.length} servidores`);
-
-            } catch (e) {
-                console.error('❌ Erro ao carregar dados mais recentes:', e);
-                showError('Erro ao carregar dados do DataStore: ' + e.message);
                 
-                // Tentar carregar dados de demonstração se o datapackage não estiver disponível
-                await carregarDadosDemonstracao();
+            } catch (error) {
+                console.error('❌ Erro ao carregar dados locais:', error);
+                showError('Erro ao carregar dados locais: ' + error.message);
+                
+                // Tentar carregar dados de exemplo
+                carregarDadosExemplo();
             } finally {
                 showLoading(false);
             }
         }
 
         // ============================================
-        // FUNÇÃO PARA CARREGAR DADOS DE DEMONSTRAÇÃO (FALLBACK)
+        // FUNÇÕES PARA GERAR DADOS DE EXEMPLO
         // ============================================
-        async function carregarDadosDemonstracao() {
-            console.log('📝 Carregando dados de demonstração...');
-            
-            // Dados de demonstração
-            servidoresData = [
+        function gerarDadosVisaoGeralExemplo() {
+            return [
+                { sigla: "SEPLAG", orgao: "Secretaria de Estado de Planejamento e Gestão", total: 2450 },
+                { sigla: "SEDESE", orgao: "Secretaria de Estado de Desenvolvimento Social", total: 1800 },
+                { sigla: "SES", orgao: "Secretaria de Estado de Saúde", total: 3200 },
+                { sigla: "SEE", orgao: "Secretaria de Estado de Educação", total: 4100 },
+                { sigla: "SEGOV", orgao: "Secretaria de Estado de Governo", total: 850 },
+                { sigla: "SEFAZ", orgao: "Secretaria de Estado de Fazenda", total: 2200 },
+                { sigla: "SEDIN", orgao: "Secretaria de Estado de Desenvolvimento Econômico", total: 950 },
+                { sigla: "SEMAD", orgao: "Secretaria de Estado de Meio Ambiente", total: 650 }
+            ];
+        }
+
+        function gerarDadosDetalhadoExemplo() {
+            return [
                 {
-                    ano_mes: '202411',
-                    masp: '123456',
-                    adm: '7890',
-                    nome: 'MARIA DA SILVA',
-                    siglaefetivo: 'TEC',
-                    nmefetivo: 'TÉCNICO EM ADMINISTRAÇÃO',
+                    ano_mes: "202411",
+                    masp: "123456",
+                    adm: "7890",
+                    nome: "MARIA DA SILVA SANTOS",
+                    siglaefetivo: "TEC",
+                    nmefetivo: "TÉCNICO EM ADMINISTRAÇÃO",
                     carga_horaria: 40,
-                    sigla_instituicao_lotacao: 'SEPLAG',
-                    desc_instituicao_lotacao: 'SECRETARIA DE ESTADO DE PLANEJAMENTO E GESTÃO',
-                    descsitserv: 'ATIVO'
+                    sigla_instituicao_lotacao: "SEPLAG",
+                    desc_instituicao_lotacao: "Secretaria de Estado de Planejamento e Gestão",
+                    descsitserv: "ATIVO"
                 },
                 {
-                    ano_mes: '202411',
-                    masp: '234567',
-                    adm: '7891',
-                    nome: 'JOSÉ SANTOS',
-                    siglaefetivo: 'ANAL',
-                    nmefetivo: 'ANALISTA DE SISTEMAS',
+                    ano_mes: "202411",
+                    masp: "234567",
+                    adm: "7891",
+                    nome: "JOSÉ CARLOS OLIVEIRA",
+                    siglaefetivo: "ANAL",
+                    nmefetivo: "ANALISTA DE SISTEMAS",
                     carga_horaria: 40,
-                    sigla_instituicao_lotacao: 'SEPLAG',
-                    desc_instituicao_lotacao: 'SECRETARIA DE ESTADO DE PLANEJAMENTO E GESTÃO',
-                    descsitserv: 'ATIVO'
+                    sigla_instituicao_lotacao: "SEPLAG",
+                    desc_instituicao_lotacao: "Secretaria de Estado de Planejamento e Gestão",
+                    descsitserv: "ATIVO"
                 },
                 {
-                    ano_mes: '202411',
-                    masp: '345678',
-                    adm: '7892',
-                    nome: 'ANA OLIVEIRA',
-                    siglaefetivo: 'ADM',
-                    nmefetivo: 'ADMINISTRADOR',
+                    ano_mes: "202411",
+                    masp: "345678",
+                    adm: "7892",
+                    nome: "ANA PAULA COSTA",
+                    siglaefetivo: "ADM",
+                    nmefetivo: "ADMINISTRADOR",
                     carga_horaria: 30,
-                    sigla_instituicao_lotacao: 'SEDESE',
-                    desc_instituicao_lotacao: 'SECRETARIA DE ESTADO DE DESENVOLVIMENTO SOCIAL',
-                    descsitserv: 'ATIVO'
+                    sigla_instituicao_lotacao: "SEDESE",
+                    desc_instituicao_lotacao: "Secretaria de Estado de Desenvolvimento Social",
+                    descsitserv: "ATIVO"
+                },
+                {
+                    ano_mes: "202411",
+                    masp: "456789",
+                    adm: "7893",
+                    nome: "CARLOS ALBERTO MENDES",
+                    siglaefetivo: "MED",
+                    nmefetivo: "MÉDICO",
+                    carga_horaria: 40,
+                    sigla_instituicao_lotacao: "SES",
+                    desc_instituicao_lotacao: "Secretaria de Estado de Saúde",
+                    descsitserv: "ATIVO"
+                },
+                {
+                    ano_mes: "202411",
+                    masp: "567890",
+                    adm: "7894",
+                    nome: "PATRÍCIA FERNANDES LIMA",
+                    siglaefetivo: "PROF",
+                    nmefetivo: "PROFESSOR",
+                    carga_horaria: 40,
+                    sigla_instituicao_lotacao: "SEE",
+                    desc_instituicao_lotacao: "Secretaria de Estado de Educação",
+                    descsitserv: "ATIVO"
                 }
             ];
+        }
+
+        function carregarDadosExemplo() {
+            console.log('📝 Carregando dados de exemplo...');
+            
+            visaoGeralData = gerarDadosVisaoGeralExemplo();
+            detalhadoData = gerarDadosDetalhadoExemplo();
+            
+            servidoresData = detalhadoData.map(item => ({
+                ano_mes: item.ano_mes,
+                masp: item.masp,
+                adm: item.adm,
+                nome: item.nome,
+                siglaefetivo: item.siglaefetivo,
+                nmefetivo: item.nmefetivo,
+                carga_horaria: item.carga_horaria,
+                sigla_instituicao_lotacao: item.sigla_instituicao_lotacao,
+                desc_instituicao_lotacao: item.desc_instituicao_lotacao,
+                descsitserv: item.descsitserv
+            }));
 
             filteredData = [...servidoresData];
             
@@ -1831,9 +1770,9 @@
             
             // Atualizar dropdowns
             MESES_DISPONIVEIS = [
-                { anoMes: '202411', ano: '2024', mes: '11', resourceId: 'demo' },
-                { anoMes: '202410', ano: '2024', mes: '10', resourceId: 'demo' },
-                { anoMes: '202409', ano: '2024', mes: '09', resourceId: 'demo' }
+                { anoMes: '202411', ano: '2024', mes: '11' },
+                { anoMes: '202410', ano: '2024', mes: '10' },
+                { anoMes: '202409', ano: '2024', mes: '09' }
             ];
             
             atualizarDropdownsMeses();
@@ -1848,13 +1787,13 @@
             updateTabelaDetalhada();
 
             // Atualizar informações do arquivo
-            document.getElementById('arquivoAtual').textContent = `dados_serv_${currentYear}${currentMonth} (Demo)`;
-            document.getElementById('arquivoFooter').textContent = `dados_serv_${currentYear}${currentMonth}.csv (Dados de Demonstração)`;
+            document.getElementById('arquivoAtual').textContent = `dados_exemplo_${currentYear}${currentMonth}`;
+            document.getElementById('arquivoFooter').textContent = `dados_exemplo_${currentYear}${currentMonth} (Dados de Exemplo)`;
 
-            console.log('✅ Dados de demonstração carregados');
+            console.log('✅ Dados de exemplo carregados');
             
             // Mostrar mensagem informativa
-            showInfo('Dados de demonstração carregados. Para carregar dados reais, certifique-se de que o arquivo docs/datapackage.json está disponível.');
+            showInfo('Dados de exemplo carregados. Para carregar dados reais, certifique-se de que os arquivos data/visao_geral.json e data/detalhado.json estão disponíveis.');
         }
 
         // ============================================
@@ -1944,9 +1883,10 @@
         // ============================================
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                console.log('=== INICIANDO DASHBOARD (DataStore) ===');
+                console.log('=== INICIANDO DASHBOARD (Dados Locais) ===');
 
-                await carregarDadosMaisRecentes();
+                // Carregar dados locais
+                await carregarDadosLocais();
 
                 // Configurar listeners
                 setupEventListeners();
@@ -2081,57 +2021,9 @@
         // CONFIGURAR EVENT LISTENERS
         // ============================================
         function setupEventListeners() {
-            // Carregar dados do mês selecionado
+            // Carregar dados locais
             document.getElementById('carregarDados').addEventListener('click', async function() {
-                const ano = document.getElementById('anoSelect').value;
-                const mes = document.getElementById('mesSelect').value;
-                
-                if (!ano || !mes) {
-                    alert('Por favor, selecione um ano e mês válidos.');
-                    return;
-                }
-                
-                showLoading(true);
-                
-                try {
-                    const dados = await carregarMesDatastore(ano, mes);
-                    
-                    servidoresData = dados.map(row => ({
-                        ano_mes: row.ano_mes || '',
-                        masp: row.masp || '',
-                        adm: row.adm || '',
-                        nome: row.nome || '',
-                        siglaefetivo: row.siglaefetivo || '',
-                        nmefetivo: row.nmefetivo || '',
-                        carga_horaria: parseInt(row.carga_horaria) || 0,
-                        sigla_instituicao_lotacao: row.sigla_instituicao_lotacao || '',
-                        desc_instituicao_lotacao: row.desc_instituicao_lotacao || '',
-                        descsitserv: row.descsitserv || ''
-                    }));
-
-                    filteredData = [...servidoresData];
-                    
-                    currentYear = ano;
-                    currentMonth = mes;
-                    
-                    updateDashboard1();
-                    updateDashboard2();
-                    updateFilterOptions();
-                    
-                    // Atualizar as novas tabelas simples
-                    updateTabelaVisaoGeral();
-                    updateTabelaDetalhada();
-
-                    // Atualizar informações do arquivo
-                    document.getElementById('arquivoAtual').textContent = `dados_serv_${ano}${mes}`;
-                    document.getElementById('arquivoFooter').textContent = `dados_serv_${ano}${mes}`;
-                    
-                } catch (e) {
-                    console.error('Erro ao carregar dados:', e);
-                    showError('Erro ao carregar dados do DataStore: ' + e.message);
-                } finally {
-                    showLoading(false);
-                }
+                await carregarDadosLocais();
             });
             
             // Dashboard 1 - Limpar filtros
@@ -2181,16 +2073,16 @@
             
             // Ver arquivos CSV
             document.getElementById('verArquivosCSV').addEventListener('click', function() {
-                let mensagem = 'Arquivos CSV disponíveis:\n\n';
-                MESES_DISPONIVEIS.forEach((mes, index) => {
-                    mensagem += `${index + 1}. dados_serv_${mes.anoMes}.csv (${monthNames[mes.mes]}/${mes.ano})\n`;
-                });
+                let mensagem = 'Arquivos disponíveis:\n\n';
+                mensagem += '1. data/visao_geral.json\n';
+                mensagem += '2. data/detalhado.json\n\n';
+                mensagem += 'Para dados do CKAN, configure o datapackage.json';
                 alert(mensagem);
             });
             
-            // Carregar dados atuais (mês mais recente)
-            window.carregarDadosAtuais = function() {
-                carregarDadosMaisRecentes();
+            // Carregar dados locais
+            window.carregarDadosLocais = function() {
+                carregarDadosLocais();
             };
         }
 
@@ -2291,60 +2183,93 @@
         // FUNÇÕES PARA AS NOVAS TABELAS SIMPLES
         // ============================================
         function updateTabelaVisaoGeral() {
-            if (!filteredData || filteredData.length === 0) return;
-            
-            const grupos = {};
-            filteredData.forEach(servidor => {
-                const sigla = servidor.sigla_instituicao_lotacao || '';
-                const orgao = servidor.desc_instituicao_lotacao || 'Não informado';
-                
-                const key = sigla + '|' + orgao;
-                if (!grupos[key]) {
-                    grupos[key] = {
-                        sigla: sigla,
-                        orgao: orgao,
-                        total: 0
-                    };
-                }
-                grupos[key].total++;
-            });
-            
             const tbody = document.querySelector('#tabela-visao-geral tbody');
             if (!tbody) return;
             
             let rowsHTML = '';
-            Object.values(grupos).sort((a, b) => b.total - a.total).forEach(item => {
-                rowsHTML += `
-                    <tr>
-                        <td>${item.sigla}</td>
-                        <td>${item.orgao}</td>
-                        <td>${item.total}</td>
-                    </tr>
-                `;
-            });
+            
+            if (visaoGeralData && visaoGeralData.length > 0) {
+                // Usar dados carregados do JSON
+                visaoGeralData.forEach(item => {
+                    rowsHTML += `
+                        <tr>
+                            <td>${item.sigla || ''}</td>
+                            <td>${item.orgao || ''}</td>
+                            <td>${item.total || 0}</td>
+                        </tr>
+                    `;
+                });
+            } else if (filteredData && filteredData.length > 0) {
+                // Gerar dados dos servidores filtrados
+                const grupos = {};
+                filteredData.forEach(servidor => {
+                    const sigla = servidor.sigla_instituicao_lotacao || '';
+                    const orgao = servidor.desc_instituicao_lotacao || 'Não informado';
+                    
+                    const key = sigla + '|' + orgao;
+                    if (!grupos[key]) {
+                        grupos[key] = {
+                            sigla: sigla,
+                            orgao: orgao,
+                            total: 0
+                        };
+                    }
+                    grupos[key].total++;
+                });
+                
+                Object.values(grupos).sort((a, b) => b.total - a.total).forEach(item => {
+                    rowsHTML += `
+                        <tr>
+                            <td>${item.sigla}</td>
+                            <td>${item.orgao}</td>
+                            <td>${item.total}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                rowsHTML = '<tr><td colspan="3" class="text-center text-muted">Nenhum dado disponível</td></tr>';
+            }
             
             tbody.innerHTML = rowsHTML;
         }
 
         function updateTabelaDetalhada() {
-            if (!filteredData || filteredData.length === 0) return;
-            
             const tbody = document.querySelector('#tabela-detalhada tbody');
             if (!tbody) return;
             
             let rowsHTML = '';
-            filteredData.slice(0, 50).forEach(servidor => {
-                rowsHTML += `
-                    <tr>
-                        <td>${servidor.masp || ''}</td>
-                        <td>${servidor.nome || ''}</td>
-                        <td>${servidor.desc_instituicao_lotacao || ''}</td>
-                        <td>${servidor.nmefetivo || ''}</td>
-                        <td>${servidor.carga_horaria || 0}h</td>
-                        <td>${servidor.descsitserv || ''}</td>
-                    </tr>
-                `;
-            });
+            
+            if (detalhadoData && detalhadoData.length > 0) {
+                // Usar dados carregados do JSON
+                detalhadoData.slice(0, 50).forEach(servidor => {
+                    rowsHTML += `
+                        <tr>
+                            <td>${servidor.masp || ''}</td>
+                            <td>${servidor.nome || ''}</td>
+                            <td>${servidor.desc_instituicao_lotacao || ''}</td>
+                            <td>${servidor.nmefetivo || ''}</td>
+                            <td>${servidor.carga_horaria || 0}h</td>
+                            <td>${servidor.descsitserv || ''}</td>
+                        </tr>
+                    `;
+                });
+            } else if (filteredData && filteredData.length > 0) {
+                // Usar dados filtrados
+                filteredData.slice(0, 50).forEach(servidor => {
+                    rowsHTML += `
+                        <tr>
+                            <td>${servidor.masp || ''}</td>
+                            <td>${servidor.nome || ''}</td>
+                            <td>${servidor.desc_instituicao_lotacao || ''}</td>
+                            <td>${servidor.nmefetivo || ''}</td>
+                            <td>${servidor.carga_horaria || 0}h</td>
+                            <td>${servidor.descsitserv || ''}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                rowsHTML = '<tr><td colspan="6" class="text-center text-muted">Nenhum dado disponível</td></tr>';
+            }
             
             tbody.innerHTML = rowsHTML;
         }
@@ -3105,10 +3030,9 @@
             showLoading(true);
             
             try {
-                const dados = await carregarMesDatastore(ano, mes);
-                
-                if (!dados || dados.length === 0) {
-                    alert(`Nenhum dado disponível para ${monthNames[mes]}/${ano}.`);
+                // Para dados locais, exportar os dados atuais
+                if (!servidoresData || servidoresData.length === 0) {
+                    alert(`Nenhum dado disponível para exportar.`);
                     showLoading(false);
                     return;
                 }
@@ -3117,7 +3041,7 @@
                                 'sigla_instituicao_lotacao', 'desc_instituicao_lotacao', 'descsitserv'];
                 const csvContent = [
                     headers.join(';'),
-                    ...dados.map(servidor => [
+                    ...servidoresData.map(servidor => [
                         servidor.ano_mes,
                         servidor.masp,
                         servidor.adm,
@@ -3142,11 +3066,11 @@
                 link.click();
                 document.body.removeChild(link);
                 
-                console.log(`Download do mês ${mes}/${ano} realizado: ${dados.length} registros`);
+                console.log(`Download realizado: ${servidoresData.length} registros`);
                 
             } catch (error) {
-                console.error(`Erro ao baixar dados de ${mes}/${ano}:`, error);
-                alert(`Erro ao baixar dados de ${mes}/${ano}. Por favor, tente novamente.`);
+                console.error(`Erro ao baixar dados:`, error);
+                alert(`Erro ao baixar dados. Por favor, tente novamente.`);
             } finally {
                 showLoading(false);
             }
@@ -3270,10 +3194,13 @@
         }
 
         // ============================================
-        // VARIÁVEIS GLOBAIS DE DADOS
+        // MESES DISPONÍVEIS (para dados locais)
         // ============================================
-        let servidoresData = [];
-        let filteredData = [];
+        let MESES_DISPONIVEIS = [
+            { anoMes: '202411', ano: '2024', mes: '11' },
+            { anoMes: '202410', ano: '2024', mes: '10' },
+            { anoMes: '202409', ano: '2024', mes: '09' }
+        ];
     </script>
 
     <!-- JS do dashboard -->
