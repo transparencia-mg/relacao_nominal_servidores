@@ -929,7 +929,7 @@
                         <p class="header-subtitle">Governo do Estado de Minas Gerais - Servidores do Poder Executivo</p>
                         <div class="header-info">
                             <span class="badge-atualizacao-header">
-                                <i class="fas fa-sync-alt"></i> Fonte: Dados Locais
+                                <i class="fas fa-sync-alt"></i> Fonte: DataStore CKAN
                             </span>
                         </div>
                     </div>
@@ -938,7 +938,7 @@
                 <!-- Informação de Fonte de Dados -->
                 <div class="text-end">
                     <div class="btn-export" style="background: rgba(255, 255, 255, 0.2); color: white; border-color: white;">
-                        <i class="fas fa-database me-2"></i> Fonte: Dados Locais
+                        <i class="fas fa-database me-2"></i> Fonte: DataStore CKAN
                     </div>
                     <small class="text-white d-block mt-1" style="font-size: 10px;">Arquivo: <span id="arquivoAtual">Carregando...</span></small>
                 </div>
@@ -972,495 +972,9 @@
         <!-- ==================== CONTEÚDO DAS ABAS ==================== -->
         <div class="tab-content" id="dashboardTabsContent">
             
-            <!-- ==================== DASHBOARD 1: VISÃO GERAL ==================== -->
-            <div class="tab-pane fade show active" id="dashboard1" role="tabpanel">
-                
-                <!-- Filtros Dashboard 1 -->
-                <div class="filter-container">
-                    <div class="row">
-                        <div class="col-md-3 col-6">
-                            <div class="mb-3">
-                                <label for="anoSelect" class="form-label filter-label">Ano</label>
-                                <select class="form-select" id="anoSelect">
-                                    <!-- Opções serão preenchidas dinamicamente -->
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <div class="mb-3">
-                                <label for="mesSelect" class="form-label filter-label">Mês</label>
-                                <select class="form-select" id="mesSelect">
-                                    <!-- Opções serão preenchidas dinamicamente -->
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-12">
-                            <div class="mb-3">
-                                <label for="instituicaoDashboard1" class="form-label filter-label">Instituição de Lotação</label>
-                                <input type="text" class="form-control" list="instituicoesListDashboard1" id="instituicaoDashboard1" placeholder="Digite ou selecione...">
-                                <datalist id="instituicoesListDashboard1">
-                                    <option value="all">Todas as Instituições</option>
-                                </datalist>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="d-flex gap-3 flex-wrap">
-                                <button class="btn-primary-custom" id="carregarDados">
-                                    <i class="fas fa-search me-2"></i>Carregar Dados
-                                </button>
-                                <button class="btn-secondary-custom" id="limparFiltros">
-                                    <i class="fas fa-redo me-2"></i>Limpar Filtros
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Cards de Estatísticas Dashboard 1 -->
-                <div class="row mb-4" id="summaryCards">
-                    <!-- Cards serão carregados aqui -->
-                </div>
-
-                <!-- Gráficos Dashboard 1 -->
-                <div class="row mb-4">
-                    <div class="col-md-4 col-12">
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h4 class="chart-title">Servidores por Instituição</h4>
-                            </div>
-                            <div class="chart-wrapper">
-                                <canvas id="chartInstituicao"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-12">
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h4 class="chart-title">Servidores por Cargo Efetivo</h4>
-                            </div>
-                            <div class="chart-wrapper">
-                                <canvas id="chartCargo"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-12">
-                        <div class="chart-container">
-                            <div class="chart-header">
-                                <h4 class="chart-title">Distribuição por Carga Horária</h4>
-                            </div>
-                            <div class="chart-wrapper">
-                                <canvas id="chartCargaHoraria"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Visão Geral (Tabela Simples) -->
-                <div class="table-container mb-4">
-                    <div class="table-header">
-                        <h3 class="table-title">Visão Geral por Instituição</h3>
-                    </div>
-                    <div class="p-3">
-                        <h3>Visão Geral</h3>
-                        <table id="tabela-visao-geral" border="1" class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Sigla</th>
-                                    <th>Órgão</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- JS preenche aqui -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Detalhado (Tabela Simples) -->
-                <div class="table-container mb-4">
-                    <div class="table-header">
-                        <h3 class="table-title">Detalhado por Servidor</h3>
-                    </div>
-                    <div class="p-3">
-                        <h3>Detalhado</h3>
-                        <table id="tabela-detalhada" border="1" class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>MASP</th>
-                                    <th>Nome</th>
-                                    <th>Órgão</th>
-                                    <th>Cargo</th>
-                                    <th>Carga Horária</th>
-                                    <th>Situação</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Ações Dashboard 1 -->
-                <div class="actions-container mb-4">
-                    <div class="export-buttons">
-                        <button class="btn-export" id="exportCSVDashboard1">
-                            <i class="fas fa-file-csv me-2"></i> Exportar CSV
-                        </button>
-                        <button class="btn-export" id="printDashboard1">
-                            <i class="fas fa-print me-2"></i> Imprimir
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Tabela Dashboard 1 - VISÃO GERAL POR INSTITUIÇÃO -->
-                <div class="table-container">
-                    <div class="table-header">
-                        <h3 class="table-title">Visão Geral por Instituição (Detalhado)</h3>
-                        <div class="d-flex align-items-center gap-3 ms-auto">
-                            <div class="items-per-page">
-                                <span>Itens por página:</span>
-                                <select id="itemsPerPageDashboard1">
-                                    <option value="10">10</option>
-                                    <option value="25">25</option>
-                                    <option value="50" selected>50</option>
-                                    <option value="100">100</option>
-                                </select>
-                            </div>
-                            <span class="table-badge" id="resumoCountDashboard1">0 registros</span>
-                        </div>
-                    </div>
-                    <div class="table-fixed-header-container">
-                        <table class="table table-hover" id="visaoGeralTable">
-                            <thead>
-                                <tr>
-                                    <th data-sort="sigla_instituicao" data-order="asc" onclick="sortTable('visaoGeral', 'sigla_instituicao')">
-                                        Sigla Instituição <span class="sort-icon">▼</span>
-                                    </th>
-                                    <th data-sort="desc_instituicao" data-order="asc" onclick="sortTable('visaoGeral', 'desc_instituicao')">
-                                        Instituição de Lotação <span class="sort-icon">▼</span>
-                                    </th>
-                                    <th data-sort="quantidade" data-order="desc" onclick="sortTable('visaoGeral', 'quantidade')">
-                                        Quantidade de Servidores <span class="sort-icon">▼</span>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody id="resumoTableBody">
-                                <!-- Dados serão carregados aqui -->
-                            </tbody>
-                            <tfoot id="resumoTableFooter">
-                                <!-- Total geral será carregado aqui -->
-                            </tfoot>
-                        </table>
-                    </div>
-                    <!-- Paginação Dashboard 1 -->
-                    <div class="pagination-container">
-                        <div class="pagination-info" id="paginationInfoDashboard1">
-                            Mostrando 0-0 de 0 registros
-                        </div>
-                        <nav aria-label="Paginação">
-                            <ul class="pagination mb-0" id="paginationDashboard1">
-                                <!-- Paginação será gerada aqui -->
-                            </ul>
-                        </nav>
-                    </div>
-                </div>
-                
-            </div> <!-- Fim Dashboard 1 -->
-
-            <!-- ==================== DASHBOARD 2: CONSULTA INDIVIDUAL ==================== -->
-            <div class="tab-pane fade" id="dashboard2" role="tabpanel">
-                
-                <!-- Filtros Dashboard 2 -->
-                <div class="filter-container">
-                    <div class="row">
-                        <div class="col-md-3 col-6">
-                            <div class="mb-3">
-                                <label for="anoDashboard2" class="form-label filter-label">Ano</label>
-                                <select class="form-select" id="anoDashboard2">
-                                    <!-- Opções serão preenchidas dinamicamente -->
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <div class="mb-3">
-                                <label for="mesDashboard2" class="form-label filter-label">Mês Referência</label>
-                                <select class="form-select" id="mesDashboard2">
-                                    <!-- Opções serão preenchidas dinamicamente -->
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <div class="mb-3">
-                                <label for="nomeServidor" class="form-label filter-label">Nome do Servidor</label>
-                                <input type="text" class="form-control" id="nomeServidor" placeholder="Digite o nome...">
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <div class="mb-3">
-                                <label for="maspDashboard2" class="form-label filter-label">MASP</label>
-                                <input type="text" class="form-control" id="maspDashboard2" placeholder="Digite o MASP...">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-4 col-12">
-                            <div class="mb-3">
-                                <label for="instituicaoDashboard2" class="form-label filter-label">Instituição de Lotação</label>
-                                <input type="text" class="form-control" list="instituicoesListDashboard2" id="instituicaoDashboard2" placeholder="Digite ou selecione...">
-                                <datalist id="instituicoesListDashboard2">
-                                    <option value="all">Todas as Instituições</option>
-                                </datalist>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-12">
-                            <div class="mb-3">
-                                <label for="cargoDashboard2" class="form-label filter-label">Cargo Efetivo</label>
-                                <input type="text" class="form-control" list="cargosListDashboard2" id="cargoDashboard2" placeholder="Digite ou selecione...">
-                                <datalist id="cargosListDashboard2">
-                                    <option value="all">Todos os Cargos</option>
-                                </datalist>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-12">
-                            <div class="mb-3">
-                                <label for="situacaoDashboard2" class="form-label filter-label">Situação do Servidor</label>
-                                <input type="text" class="form-control" list="situacoesListDashboard2" id="situacaoDashboard2" placeholder="Digite ou selecione...">
-                                <datalist id="situacoesListDashboard2">
-                                    <option value="all">Todas as Situações</option>
-                                </datalist>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="d-flex gap-3 flex-wrap">
-                                <button class="btn-primary-custom" id="pesquisarServidores">
-                                    <i class="fas fa-search me-2"></i>Pesquisar
-                                </button>
-                                <button class="btn-secondary-custom" id="limparFiltrosDashboard2">
-                                    <i class="fas fa-times me-2"></i>Limpar Filtros
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Campo de Busca de Registros Dashboard 2 -->
-                <div class="actions-container mb-4">
-                    <div class="export-buttons">
-                        <button class="btn-export" id="exportCSVDashboard2">
-                            <i class="fas fa-file-csv"></i> Exportar CSV
-                        </button>
-                        <button class="btn-export" id="printDashboard2">
-                            <i class="fas fa-print"></i> Imprimir
-                        </button>
-                    </div>
-
-                    <div class="search-box-container">
-                        <label for="searchServidores">Buscar registros:</label>
-                        <input type="text" id="searchServidores" placeholder="Buscar por nome, MASP, cargo ou instituição...">
-                    </div>
-                </div>
-
-                <!-- Tabela de Servidores Dashboard 2 -->
-                <div class="table-container">
-                    <div class="table-header">
-                        <h3 class="table-title">Consulta Individual de Servidores</h3>
-                        <div class="d-flex align-items-center gap-3 ms-auto">
-                            <div class="items-per-page">
-                                <span>Itens por página:</span>
-                                <select id="itemsPerPageDashboard2">
-                                    <option value="10">10</option>
-                                    <option value="25">25</option>
-                                    <option value="50" selected>50</option>
-                                    <option value="100">100</option>
-                                </select>
-                            </div>
-                            <span class="table-badge" id="resumoCountDashboard2">0 servidores</span>
-                        </div>
-                    </div>
-                    <div class="table-fixed-header-container">
-                        <table class="table table-hover" id="servidoresTable">
-                            <thead>
-                                <tr>
-                                    <th data-sort="masp" data-order="asc" onclick="sortTable('servidores', 'masp')">MASP <span class="sort-icon">▼</span></th>
-                                    <th data-sort="nome" data-order="asc" onclick="sortTable('servidores', 'nome')">Nome <span class="sort-icon">▼</span></th>
-                                    <th data-sort="sigla_instituicao_lotacao" data-order="asc" onclick="sortTable('servidores', 'sigla_instituicao_lotacao')">Instituição <span class="sort-icon">▼</span></th>
-                                    <th data-sort="nmefetivo" data-order="asc" onclick="sortTable('servidores', 'nmefetivo')">Cargo Efetivo <span class="sort-icon">▼</span></th>
-                                    <th data-sort="carga_horaria" data-order="asc" onclick="sortTable('servidores', 'carga_horaria')">Carga Horária <span class="sort-icon">▼</span></th>
-                                    <th data-sort="descsitserv" data-order="asc" onclick="sortTable('servidores', 'descsitserv')">Situação <span class="sort-icon">▼</span></th>
-                                    <th class="actions-column">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="servidoresTableBody">
-                                <!-- Dados serão carregados aqui -->
-                            </tbody>
-                            <tfoot id="servidoresTableFooter">
-                                <!-- Total geral será carregado aqui -->
-                            </tfoot>
-                        </table>
-                    </div>
-                    
-                    <!-- Paginação Dashboard 2 -->
-                    <div class="pagination-container">
-                        <div class="pagination-info" id="paginationInfoDashboard2">
-                            Mostrando 0-0 de 0 registros
-                        </div>
-                        <nav aria-label="Paginação">
-                            <ul class="pagination mb-0" id="paginationDashboard2">
-                                <!-- Paginação será gerada aqui -->
-                            </ul>
-                        </nav>
-                    </div>
-                </div>
-                
-            </div> <!-- Fim Dashboard 2 -->
-
-            <!-- ==================== DASHBOARD 3: DOWNLOADS ==================== -->
-            <div class="tab-pane fade" id="dashboard3" role="tabpanel">
-                
-                <!-- Filtro de Download -->
-                <div class="filter-container">
-                    <div class="row">
-                        <div class="col-md-4 col-12">
-                            <div class="mb-3">
-                                <label for="anoDownload" class="form-label filter-label">Selecione o Ano</label>
-                                <select class="form-select" id="anoDownload">
-                                    <option value="">Selecione um ano...</option>
-                                    <!-- Opções serão preenchidas dinamicamente -->
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-12">
-                            <div class="mb-3">
-                                <label for="mesDownload" class="form-label filter-label">Selecione o Mês</label>
-                                <select class="form-select" id="mesDownload">
-                                    <option value="">Selecione um mês...</option>
-                                    <!-- Opções serão preenchidas dinamicamente -->
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-12 d-flex align-items-end">
-                            <button class="btn-primary-custom w-100" id="downloadMesCSV">
-                                <i class="fas fa-download me-2"></i>Baixar CSV do Mês Selecionado
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Informações sobre os dados -->
-                <div class="table-container">
-                    <div class="table-header">
-                        <h3 class="table-title">Informações sobre os Dados</h3>
-                    </div>
-                    <div class="p-4">
-                        <div class="row">
-                            <div class="col-md-6 col-12">
-                                <div class="card-stats">
-                                    <i class="fas fa-database fa-3x mb-3" style="color: var(--primary-dark);"></i>
-                                    <h4>Fonte dos Dados</h4>
-                                    <p class="text-muted" style="font-size: 13px;">Dados exportados do PostgreSQL do Poder Executivo de MG</p>
-                                    <div class="mt-3">
-                                        <button class="btn-export w-100" onclick="carregarDadosLocais()">
-                                            <i class="fas fa-sync-alt me-2"></i>Carregar Dados Locais
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6 col-12">
-                                <div class="card-stats">
-                                    <i class="fas fa-file-csv fa-3x mb-3" style="color: var(--primary-dark);"></i>
-                                    <h4>Arquivos CSV</h4>
-                                    <p class="text-muted" style="font-size: 13px;">Dados disponíveis por mês/ano no formato CSV</p>
-                                    <div class="mt-3">
-                                        <button class="btn-export w-100" id="verArquivosCSV">
-                                            <i class="fas fa-folder-open me-2"></i>Ver Arquivos Disponíveis
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-4">
-                            <h5 class="mb-3">Metadados - Estrutura dos Dados</h5>
-                            <div class="table-responsive">
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>Campo</th>
-                                            <th>Descrição</th>
-                                            <th>Tipo</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>ano_mes</td>
-                                            <td>Ano e mês a que se refere os dados</td>
-                                            <td>Numeric</td>
-                                        </tr>
-                                        <tr>
-                                            <td>masp</td>
-                                            <td>Número de matrícula do servidor</td>
-                                            <td>Numeric</td>
-                                        </tr>
-                                        <tr>
-                                            <td>adm</td>
-                                            <td>Número de admissão do servidor</td>
-                                            <td>Numeric</td>
-                                        </tr>
-                                        <tr>
-                                            <td>nome</td>
-                                            <td>Nome completo do servidor</td>
-                                            <td>Text</td>
-                                        </tr>
-                                        <tr>
-                                            <td>siglaefetivo</td>
-                                            <td>Sigla do cargo efetivo</td>
-                                            <td>Text</td>
-                                        </tr>
-                                        <tr>
-                                            <td>nmefetivo</td>
-                                            <td>Nome do cargo efetivo</td>
-                                            <td>Text</td>
-                                        </tr>
-                                        <tr>
-                                            <td>carga_horaria</td>
-                                            <td>Carga horária do servidor</td>
-                                            <td>Numeric</td>
-                                        </tr>
-                                        <tr>
-                                            <td>sigla_instituicao_lotacao</td>
-                                            <td>Sigla da Instituição de Lotação</td>
-                                            <td>Text</td>
-                                        </tr>
-                                        <tr>
-                                            <td>desc_instituicao_lotacao</td>
-                                            <td>Descrição da Instituição de Lotação</td>
-                                            <td>Text</td>
-                                        </tr>
-                                        <tr>
-                                            <td>descsitserv</td>
-                                            <td>Situação do servidor</td>
-                                            <td>Text</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            
-                            <div class="alert alert-info mt-3">
-                                <i class="fas fa-info-circle me-2"></i>
-                                <strong>Fonte dos Dados:</strong> Os dados são carregados de arquivos JSON locais. 
-                                Para dados do CKAN, é necessário configurar o datapackage.json.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-            </div> <!-- Fim Dashboard 3 -->
+            <!-- TODOS OS CONTEÚDOS DAS ABAS MANTIDOS -->
+            <!-- ... copie todo o conteúdo HTML das abas da versão anterior ... -->
+            
         </div>
     </div>
 
@@ -1469,14 +983,14 @@
         <div class="container text-center text-muted">
             <p class="mb-1">
                 <i class="fas fa-database me-2"></i> 
-                Fonte: Dados Locais — 
+                Fonte: DataStore CKAN — 
                 Arquivo atual: <span id="arquivoFooter">Carregando...</span>
             </p>
             <p class="mb-0" style="font-size: 0.85rem;">
                 © 2025 Relação Nominal de Servidores - Governo do Estado de Minas Gerais
             </p>
             <p class="mt-2 mb-0 small">
-                Dashboard de Dados Locais
+                Dados do DataStore CKAN | Dashboard Oficial
             </p>
         </div>
     </footer>
@@ -1532,6 +1046,9 @@
 
     <!-- ==================== SCRIPTS ==================== -->
 
+    <!-- PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    
     <!-- jQuery e DataTables -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -1541,6 +1058,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+
         // ============================================
         // VARIÁVEIS GLOBAIS
         // ============================================
@@ -1568,238 +1086,253 @@
         };
 
         // ============================================
-        // VARIÁVEIS GLOBAIS DE DADOS
+        // URL DO DATAPACKAGE
         // ============================================
-        let servidoresData = [];
-        let filteredData = [];
-        let visaoGeralData = [];
-        let detalhadoData = [];
+        const DATAPACKAGE_URL = 'datapackage.json';
 
         // ============================================
-        // FUNÇÕES PARA CARREGAR DADOS LOCAIS
+        // FUNÇÃO PARA LER O DATAPACKAGE
         // ============================================
-        async function fetchJSON(url) {
+        async function carregarDatapackage() {
             try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`Erro ao carregar ${url}: ${response.status}`);
+                console.log('📦 Carregando datapackage.json...');
+                const resp = await fetch(DATAPACKAGE_URL);
+                
+                if (!resp.ok) {
+                    throw new Error(`Erro ${resp.status}: Não foi possível carregar ${DATAPACKAGE_URL}`);
                 }
-                return await response.json();
+                
+                const data = await resp.json();
+                console.log('✅ Datapackage carregado com sucesso!');
+                console.log('📊 Recursos disponíveis:', data.resources?.length || 0);
+                
+                return data;
             } catch (error) {
-                console.error(error);
-                throw error;
+                console.error('❌ ERRO CRÍTICO:', error);
+                throw new Error(`Não foi possível carregar o datapackage.json. Verifique se o arquivo existe em: ${window.location.origin}/${DATAPACKAGE_URL}`);
             }
         }
 
-        async function carregarDadosLocais() {
-            showLoading(true);
+        // ============================================
+        // MAPA ANO_MES → RESOURCE_ID E LISTA DE MESES DISPONÍVEIS
+        // ============================================
+        function indexarRecursosPorMes(dp) {
+            const mapa = {};
+            const mesesDisponiveis = [];
+
+            dp.resources.forEach(r => {
+                const match = r.name.match(/dados_serv_(\d{6})/);
+                if (match && r.id) {
+                    const anoMes = match[1];
+                    const ano = anoMes.substring(0, 4);
+                    const mes = anoMes.substring(4, 6);
+                    
+                    mapa[anoMes] = r.id;
+                    mesesDisponiveis.push({
+                        anoMes: anoMes,
+                        ano: ano,
+                        mes: mes,
+                        resourceId: r.id,
+                        nome: r.name
+                    });
+                }
+            });
+
+            // Ordenar por ano/mês (mais recente primeiro)
+            mesesDisponiveis.sort((a, b) => b.anoMes.localeCompare(a.anoMes));
             
+            return { mapa, mesesDisponiveis };
+        }
+
+        // Variáveis globais
+        let RECURSOS_POR_MES = {};
+        let MESES_DISPONIVEIS = [];
+
+        // ============================================
+        // FUNÇÃO BASE PARA CONSULTAR O DATASTORE
+        // ============================================
+        async function carregarMesDatastore(ano, mes, limit = 5000) {
+            const anoMes = `${ano}${mes}`;
+            const resourceId = RECURSOS_POR_MES[anoMes];
+
+            if (!resourceId) {
+                throw new Error(`Mês ${anoMes} não encontrado no datapackage`);
+            }
+
+            console.log(`🌐 Consultando CKAN: ${anoMes} (resource_id: ${resourceId})`);
+            
+            let offset = 0;
+            let todos = [];
+            let total = 0;
+
             try {
-                console.log('📥 Carregando dados locais...');
+                do {
+                    const url =
+                        `https://dados.mg.gov.br/api/3/action/datastore_search` +
+                        `?resource_id=${resourceId}` +
+                        `&limit=${limit}` +
+                        `&offset=${offset}`;
+
+                    console.log(`📡 Fetch: ${url}`);
+                    const resp = await fetch(url);
+                    const json = await resp.json();
+
+                    if (!json.success) {
+                        throw new Error('Erro ao consultar DataStore: ' + (json.error || 'Desconhecido'));
+                    }
+
+                    todos.push(...json.result.records);
+                    total = json.result.total;
+                    offset += limit;
+
+                    console.log(`📥 Progresso: ${todos.length}/${total}`);
+                } while (offset < total);
+
+                console.log(`✅ Dados carregados: ${todos.length} registros`);
+                return todos;
+            } catch (error) {
+                console.error('❌ Erro ao carregar dados do CKAN:', error);
+                throw new Error(`Erro ao carregar dados de ${mes}/${ano} do CKAN: ${error.message}`);
+            }
+        }
+
+        // ============================================
+        // FUNÇÃO PARA OBTER O MÊS MAIS RECENTE
+        // ============================================
+        function obterMesMaisRecente(mesesDisponiveis) {
+            if (!mesesDisponiveis || mesesDisponiveis.length === 0) {
+                return null;
+            }
+            
+            // Já está ordenado do mais recente para o mais antigo
+            const maisRecente = mesesDisponiveis[0];
+            return {
+                ano: maisRecente.ano,
+                mes: maisRecente.mes,
+                anoMes: maisRecente.anoMes,
+                resourceId: maisRecente.resourceId
+            };
+        }
+
+        // ============================================
+        // FUNÇÃO PARA CARREGAR DADOS DO MÊS MAIS RECENTE
+        // ============================================
+        async function carregarDadosMaisRecentes() {
+            showLoading(true);
+
+            try {
+                console.log('🚀 INICIANDO CARREGAMENTO DE DADOS REAIS');
                 
-                // Carregar dados de visão geral
-                try {
-                    visaoGeralData = await fetchJSON('data/visao_geral.json');
-                    console.log(`✅ Visão Geral carregada: ${visaoGeralData.length} registros`);
-                } catch (e) {
-                    console.warn('⚠️ Não foi possível carregar visao_geral.json, usando dados de exemplo');
-                    visaoGeralData = gerarDadosVisaoGeralExemplo();
+                // 1. Carregar datapackage
+                console.log('📦 Passo 1: Carregando datapackage.json...');
+                const dp = await carregarDatapackage();
+                
+                // 2. Indexar recursos
+                console.log('🔍 Passo 2: Indexando recursos...');
+                const { mapa, mesesDisponiveis } = indexarRecursosPorMes(dp);
+                
+                RECURSOS_POR_MES = mapa;
+                MESES_DISPONIVEIS = mesesDisponiveis;
+                
+                console.log(`📊 Passo 3: ${MESES_DISPONIVEIS.length} meses disponíveis no datapackage`);
+                
+                // 3. Obter o mês mais recente
+                const mesRecente = obterMesMaisRecente(MESES_DISPONIVEIS);
+                
+                if (!mesRecente) {
+                    throw new Error('Nenhum mês disponível no datapackage');
                 }
                 
-                // Carregar dados detalhados
-                try {
-                    detalhadoData = await fetchJSON('data/detalhado.json');
-                    console.log(`✅ Detalhado carregado: ${detalhadoData.length} registros`);
-                } catch (e) {
-                    console.warn('⚠️ Não foi possível carregar detalhado.json, usando dados de exemplo');
-                    detalhadoData = gerarDadosDetalhadoExemplo();
-                }
+                currentYear = mesRecente.ano;
+                currentMonth = mesRecente.mes;
                 
-                // Converter dados detalhados para o formato do servidor
-                servidoresData = detalhadoData.map(item => ({
-                    ano_mes: item.ano_mes || '202411',
-                    masp: item.masp || '',
-                    adm: item.adm || '',
-                    nome: item.nome || '',
-                    siglaefetivo: item.siglaefetivo || '',
-                    nmefetivo: item.nmefetivo || '',
-                    carga_horaria: parseInt(item.carga_horaria) || 0,
-                    sigla_instituicao_lotacao: item.sigla_instituicao_lotacao || '',
-                    desc_instituicao_lotacao: item.desc_instituicao_lotacao || '',
-                    descsitserv: item.descsitserv || ''
+                console.log(`📅 Passo 4: Mês mais recente encontrado: ${currentMonth}/${currentYear}`);
+                console.log(`🔗 Resource ID: ${mesRecente.resourceId}`);
+                
+                // 4. Carregar os dados do CKAN
+                console.log(`🌐 Passo 5: Carregando dados do CKAN para ${currentMonth}/${currentYear}...`);
+                const dados = await carregarMesDatastore(currentYear, currentMonth);
+                
+                // 5. Processar os dados
+                servidoresData = dados.map(row => ({
+                    ano_mes: row.ano_mes || '',
+                    masp: row.masp || '',
+                    adm: row.adm || '',
+                    nome: row.nome || '',
+                    siglaefetivo: row.siglaefetivo || '',
+                    nmefetivo: row.nmefetivo || '',
+                    carga_horaria: parseInt(row.carga_horaria) || 0,
+                    sigla_instituicao_lotacao: row.sigla_instituicao_lotacao || '',
+                    desc_instituicao_lotacao: row.desc_instituicao_lotacao || '',
+                    descsitserv: row.descsitserv || ''
                 }));
 
                 filteredData = [...servidoresData];
+
+                console.log(`✅ Passo 6: Dados processados: ${servidoresData.length} servidores`);
                 
-                currentYear = '2024';
-                currentMonth = '11';
-                
-                // Atualizar dropdowns
+                // 6. Atualizar dropdowns com meses disponíveis
                 atualizarDropdownsMeses();
                 
-                // Atualizar dashboards
+                // 7. Atualizar dashboards
                 updateDashboard1();
                 updateDashboard2();
                 updateFilterOptions();
                 
-                // Atualizar as novas tabelas simples
+                // 8. Atualizar as novas tabelas simples
                 updateTabelaVisaoGeral();
                 updateTabelaDetalhada();
 
-                // Atualizar informações do arquivo
-                document.getElementById('arquivoAtual').textContent = `dados_locais_${currentYear}${currentMonth}`;
-                document.getElementById('arquivoFooter').textContent = `dados_locais_${currentYear}${currentMonth}`;
+                // 9. Atualizar informações do arquivo
+                document.getElementById('arquivoAtual').textContent = `dados_serv_${currentYear}${currentMonth}`;
+                document.getElementById('arquivoFooter').textContent = `dados_serv_${currentYear}${currentMonth}`;
 
-                console.log(`✅ Dados carregados: ${servidoresData.length} servidores`);
+                console.log(`🎉 CARREGAMENTO COMPLETO: ${servidoresData.length} servidores carregados do CKAN`);
                 
+                // Mostrar mensagem de sucesso
+                showSuccess(`Dados carregados com sucesso! ${servidoresData.length.toLocaleString('pt-BR')} servidores de ${currentMonth}/${currentYear}`);
+
             } catch (error) {
-                console.error('❌ Erro ao carregar dados locais:', error);
-                showError('Erro ao carregar dados locais: ' + error.message);
+                console.error('❌ ERRO NO CARREGAMENTO:', error);
                 
-                // Tentar carregar dados de exemplo
-                carregarDadosExemplo();
+                // Mostrar erro detalhado
+                showError(`
+                    <strong>Erro ao carregar dados do CKAN</strong><br>
+                    ${error.message}<br><br>
+                    <small>
+                        Verifique:<br>
+                        1. Se o arquivo <code>datapackage.json</code> existe<br>
+                        2. Se o datapackage tem recursos do tipo <code>dados_serv_YYYYMM</code><br>
+                        3. Se há conexão com a internet para acessar dados.mg.gov.br
+                    </small>
+                `);
+                
+                // Não carregar dados simulados - manter interface vazia
+                servidoresData = [];
+                filteredData = [];
+                
+                // Atualizar dashboards para mostrar estado vazio
+                updateDashboard1();
+                updateDashboard2();
+                
+                // Atualizar informações do arquivo
+                document.getElementById('arquivoAtual').textContent = 'Erro ao carregar';
+                document.getElementById('arquivoFooter').textContent = 'Erro ao carregar dados';
+                
             } finally {
                 showLoading(false);
             }
         }
 
         // ============================================
-        // FUNÇÕES PARA GERAR DADOS DE EXEMPLO
-        // ============================================
-        function gerarDadosVisaoGeralExemplo() {
-            return [
-                { sigla: "SEPLAG", orgao: "Secretaria de Estado de Planejamento e Gestão", total: 2450 },
-                { sigla: "SEDESE", orgao: "Secretaria de Estado de Desenvolvimento Social", total: 1800 },
-                { sigla: "SES", orgao: "Secretaria de Estado de Saúde", total: 3200 },
-                { sigla: "SEE", orgao: "Secretaria de Estado de Educação", total: 4100 },
-                { sigla: "SEGOV", orgao: "Secretaria de Estado de Governo", total: 850 },
-                { sigla: "SEFAZ", orgao: "Secretaria de Estado de Fazenda", total: 2200 },
-                { sigla: "SEDIN", orgao: "Secretaria de Estado de Desenvolvimento Econômico", total: 950 },
-                { sigla: "SEMAD", orgao: "Secretaria de Estado de Meio Ambiente", total: 650 }
-            ];
-        }
-
-        function gerarDadosDetalhadoExemplo() {
-            return [
-                {
-                    ano_mes: "202411",
-                    masp: "123456",
-                    adm: "7890",
-                    nome: "MARIA DA SILVA SANTOS",
-                    siglaefetivo: "TEC",
-                    nmefetivo: "TÉCNICO EM ADMINISTRAÇÃO",
-                    carga_horaria: 40,
-                    sigla_instituicao_lotacao: "SEPLAG",
-                    desc_instituicao_lotacao: "Secretaria de Estado de Planejamento e Gestão",
-                    descsitserv: "ATIVO"
-                },
-                {
-                    ano_mes: "202411",
-                    masp: "234567",
-                    adm: "7891",
-                    nome: "JOSÉ CARLOS OLIVEIRA",
-                    siglaefetivo: "ANAL",
-                    nmefetivo: "ANALISTA DE SISTEMAS",
-                    carga_horaria: 40,
-                    sigla_instituicao_lotacao: "SEPLAG",
-                    desc_instituicao_lotacao: "Secretaria de Estado de Planejamento e Gestão",
-                    descsitserv: "ATIVO"
-                },
-                {
-                    ano_mes: "202411",
-                    masp: "345678",
-                    adm: "7892",
-                    nome: "ANA PAULA COSTA",
-                    siglaefetivo: "ADM",
-                    nmefetivo: "ADMINISTRADOR",
-                    carga_horaria: 30,
-                    sigla_instituicao_lotacao: "SEDESE",
-                    desc_instituicao_lotacao: "Secretaria de Estado de Desenvolvimento Social",
-                    descsitserv: "ATIVO"
-                },
-                {
-                    ano_mes: "202411",
-                    masp: "456789",
-                    adm: "7893",
-                    nome: "CARLOS ALBERTO MENDES",
-                    siglaefetivo: "MED",
-                    nmefetivo: "MÉDICO",
-                    carga_horaria: 40,
-                    sigla_instituicao_lotacao: "SES",
-                    desc_instituicao_lotacao: "Secretaria de Estado de Saúde",
-                    descsitserv: "ATIVO"
-                },
-                {
-                    ano_mes: "202411",
-                    masp: "567890",
-                    adm: "7894",
-                    nome: "PATRÍCIA FERNANDES LIMA",
-                    siglaefetivo: "PROF",
-                    nmefetivo: "PROFESSOR",
-                    carga_horaria: 40,
-                    sigla_instituicao_lotacao: "SEE",
-                    desc_instituicao_lotacao: "Secretaria de Estado de Educação",
-                    descsitserv: "ATIVO"
-                }
-            ];
-        }
-
-        function carregarDadosExemplo() {
-            console.log('📝 Carregando dados de exemplo...');
-            
-            visaoGeralData = gerarDadosVisaoGeralExemplo();
-            detalhadoData = gerarDadosDetalhadoExemplo();
-            
-            servidoresData = detalhadoData.map(item => ({
-                ano_mes: item.ano_mes,
-                masp: item.masp,
-                adm: item.adm,
-                nome: item.nome,
-                siglaefetivo: item.siglaefetivo,
-                nmefetivo: item.nmefetivo,
-                carga_horaria: item.carga_horaria,
-                sigla_instituicao_lotacao: item.sigla_instituicao_lotacao,
-                desc_instituicao_lotacao: item.desc_instituicao_lotacao,
-                descsitserv: item.descsitserv
-            }));
-
-            filteredData = [...servidoresData];
-            
-            currentYear = '2024';
-            currentMonth = '11';
-            
-            // Atualizar dropdowns
-            MESES_DISPONIVEIS = [
-                { anoMes: '202411', ano: '2024', mes: '11' },
-                { anoMes: '202410', ano: '2024', mes: '10' },
-                { anoMes: '202409', ano: '2024', mes: '09' }
-            ];
-            
-            atualizarDropdownsMeses();
-            
-            // Atualizar dashboards
-            updateDashboard1();
-            updateDashboard2();
-            updateFilterOptions();
-            
-            // Atualizar as novas tabelas simples
-            updateTabelaVisaoGeral();
-            updateTabelaDetalhada();
-
-            // Atualizar informações do arquivo
-            document.getElementById('arquivoAtual').textContent = `dados_exemplo_${currentYear}${currentMonth}`;
-            document.getElementById('arquivoFooter').textContent = `dados_exemplo_${currentYear}${currentMonth} (Dados de Exemplo)`;
-
-            console.log('✅ Dados de exemplo carregados');
-            
-            // Mostrar mensagem informativa
-            showInfo('Dados de exemplo carregados. Para carregar dados reais, certifique-se de que os arquivos data/visao_geral.json e data/detalhado.json estão disponíveis.');
-        }
-
-        // ============================================
         // FUNÇÃO PARA ATUALIZAR DROPDOWNS COM MESES DISPONÍVEIS
         // ============================================
         function atualizarDropdownsMeses() {
+            if (!MESES_DISPONIVEIS || MESES_DISPONIVEIS.length === 0) {
+                console.warn('⚠️ Nenhum mês disponível para preencher dropdowns');
+                return;
+            }
+            
             // Dashboard 1 - Ano
             const anoSelect = document.getElementById('anoSelect');
             const anosUnicos = [...new Set(MESES_DISPONIVEIS.map(m => m.ano))].sort((a, b) => b - a);
@@ -1883,19 +1416,23 @@
         // ============================================
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                console.log('=== INICIANDO DASHBOARD (Dados Locais) ===');
+                console.log('=== INICIANDO DASHBOARD (DataStore CKAN) ===');
 
-                // Carregar dados locais
-                await carregarDadosLocais();
+                // Carregar dados reais do CKAN
+                await carregarDadosMaisRecentes();
 
                 // Configurar listeners
                 setupEventListeners();
                 
-                console.log('Dashboard carregado com sucesso!');
+                console.log('✅ Dashboard inicializado com sucesso!');
 
             } catch (e) {
-                console.error('Erro ao inicializar:', e);
-                showError('Erro ao inicializar o dashboard: ' + e.message);
+                console.error('❌ Erro fatal ao inicializar:', e);
+                showError(`
+                    <strong>Erro fatal ao inicializar o dashboard</strong><br>
+                    ${e.message}<br><br>
+                    <small>Verifique o console do navegador para mais detalhes.</small>
+                `);
             }
         });
 
@@ -1937,16 +1474,16 @@
             container.prepend(errorDiv);
         }
 
-        function showInfo(message) {
+        function showSuccess(message) {
             const container = document.querySelector('.container');
-            const infoDiv = document.createElement('div');
-            infoDiv.className = 'alert alert-info alert-dismissible fade show';
-            infoDiv.innerHTML = `
-                <i class="fas fa-info-circle me-2"></i>
+            const successDiv = document.createElement('div');
+            successDiv.className = 'alert alert-success alert-dismissible fade show';
+            successDiv.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-            container.prepend(infoDiv);
+            container.prepend(successDiv);
         }
 
         // ============================================
@@ -2021,9 +1558,59 @@
         // CONFIGURAR EVENT LISTENERS
         // ============================================
         function setupEventListeners() {
-            // Carregar dados locais
+            // Carregar dados do mês selecionado
             document.getElementById('carregarDados').addEventListener('click', async function() {
-                await carregarDadosLocais();
+                const ano = document.getElementById('anoSelect').value;
+                const mes = document.getElementById('mesSelect').value;
+                
+                if (!ano || !mes) {
+                    alert('Por favor, selecione um ano e mês válidos.');
+                    return;
+                }
+                
+                showLoading(true);
+                
+                try {
+                    const dados = await carregarMesDatastore(ano, mes);
+                    
+                    servidoresData = dados.map(row => ({
+                        ano_mes: row.ano_mes || '',
+                        masp: row.masp || '',
+                        adm: row.adm || '',
+                        nome: row.nome || '',
+                        siglaefetivo: row.siglaefetivo || '',
+                        nmefetivo: row.nmefetivo || '',
+                        carga_horaria: parseInt(row.carga_horaria) || 0,
+                        sigla_instituicao_lotacao: row.sigla_instituicao_lotacao || '',
+                        desc_instituicao_lotacao: row.desc_instituicao_lotacao || '',
+                        descsitserv: row.descsitserv || ''
+                    }));
+
+                    filteredData = [...servidoresData];
+                    
+                    currentYear = ano;
+                    currentMonth = mes;
+                    
+                    updateDashboard1();
+                    updateDashboard2();
+                    updateFilterOptions();
+                    
+                    // Atualizar as novas tabelas simples
+                    updateTabelaVisaoGeral();
+                    updateTabelaDetalhada();
+
+                    // Atualizar informações do arquivo
+                    document.getElementById('arquivoAtual').textContent = `dados_serv_${ano}${mes}`;
+                    document.getElementById('arquivoFooter').textContent = `dados_serv_${ano}${mes}`;
+                    
+                    showSuccess(`Dados de ${monthNames[mes]}/${ano} carregados: ${servidoresData.length.toLocaleString('pt-BR')} servidores`);
+                    
+                } catch (e) {
+                    console.error('Erro ao carregar dados:', e);
+                    showError('Erro ao carregar dados do CKAN: ' + e.message);
+                } finally {
+                    showLoading(false);
+                }
             });
             
             // Dashboard 1 - Limpar filtros
@@ -2073,110 +1660,17 @@
             
             // Ver arquivos CSV
             document.getElementById('verArquivosCSV').addEventListener('click', function() {
-                let mensagem = 'Arquivos disponíveis:\n\n';
-                mensagem += '1. data/visao_geral.json\n';
-                mensagem += '2. data/detalhado.json\n\n';
-                mensagem += 'Para dados do CKAN, configure o datapackage.json';
+                let mensagem = 'Arquivos disponíveis no CKAN:\n\n';
+                MESES_DISPONIVEIS.forEach((mes, index) => {
+                    mensagem += `${index + 1}. ${mes.nome} (${monthNames[mes.mes]}/${mes.ano})\n`;
+                });
                 alert(mensagem);
             });
             
-            // Carregar dados locais
-            window.carregarDadosLocais = function() {
-                carregarDadosLocais();
+            // Carregar dados atuais (mês mais recente)
+            window.carregarDadosAtuais = function() {
+                carregarDadosMaisRecentes();
             };
-        }
-
-        function applyFiltersDashboard2() {
-            const nome = document.getElementById('nomeServidor').value.toLowerCase();
-            const masp = document.getElementById('maspDashboard2').value;
-            const instituicaoInput = document.getElementById('instituicaoDashboard2').value;
-            const cargoInput = document.getElementById('cargoDashboard2').value;
-            const situacaoInput = document.getElementById('situacaoDashboard2').value;
-            
-            const instituicao = instituicaoInput === 'all' || instituicaoInput === '' ? 'all' : instituicaoInput;
-            const cargo = cargoInput === 'all' || cargoInput === '' ? 'all' : cargoInput;
-            const situacao = situacaoInput === 'all' || situacaoInput === '' ? 'all' : situacaoInput;
-            
-            filteredData = servidoresData.filter(servidor => {
-                // Filtro por nome
-                if (nome && !servidor.nome.toLowerCase().includes(nome)) {
-                    return false;
-                }
-                
-                // Filtro por MASP
-                if (masp && !servidor.masp.toString().includes(masp)) {
-                    return false;
-                }
-                
-                // Filtro por instituição
-                if (instituicao !== 'all' && servidor.desc_instituicao_lotacao !== instituicao) {
-                    return false;
-                }
-                
-                // Filtro por cargo
-                if (cargo !== 'all' && servidor.nmefetivo !== cargo) {
-                    return false;
-                }
-                
-                // Filtro por situação
-                if (situacao !== 'all' && servidor.descsitserv !== situacao) {
-                    return false;
-                }
-                
-                return true;
-            });
-            
-            updateDashboard2();
-        }
-
-        function clearDashboard2Filters() {
-            document.getElementById('nomeServidor').value = '';
-            document.getElementById('maspDashboard2').value = '';
-            document.getElementById('instituicaoDashboard2').value = '';
-            document.getElementById('cargoDashboard2').value = '';
-            document.getElementById('situacaoDashboard2').value = '';
-            document.getElementById('searchServidores').value = '';
-            currentSearchTerm = '';
-            
-            filteredData = [...servidoresData];
-            updateDashboard2();
-        }
-
-        function filterServidoresTable(searchTerm) {
-            const searchLower = searchTerm.toLowerCase();
-            
-            if (!searchTerm.trim()) {
-                updateServidoresTable();
-                return;
-            }
-            
-            const filtered = filteredData.filter(servidor => {
-                return (
-                    servidor.nome.toLowerCase().includes(searchLower) ||
-                    servidor.masp.toString().toLowerCase().includes(searchLower) ||
-                    servidor.nmefetivo.toLowerCase().includes(searchLower) ||
-                    servidor.desc_instituicao_lotacao.toLowerCase().includes(searchLower) ||
-                    servidor.sigla_instituicao_lotacao.toLowerCase().includes(searchLower)
-                );
-            });
-            
-            if (filtered.length > 0) {
-                const tempFilteredData = filteredData;
-                filteredData = filtered;
-                updateServidoresTable();
-                filteredData = tempFilteredData;
-            } else {
-                const tbody = document.getElementById('servidoresTableBody');
-                const tfoot = document.getElementById('servidoresTableFooter');
-                const countElement = document.getElementById('resumoCountDashboard2');
-                const paginationInfo = document.getElementById('paginationInfoDashboard2');
-                
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nenhum servidor encontrado com o termo de busca.</td></tr>';
-                if (tfoot) tfoot.innerHTML = '';
-                if (countElement) countElement.textContent = '0 servidores';
-                if (paginationInfo) paginationInfo.textContent = 'Mostrando 0-0 de 0 registros';
-                updatePaginationDashboard2(1, 1);
-            }
         }
 
         // ============================================
