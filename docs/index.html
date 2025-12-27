@@ -1367,8 +1367,8 @@
                                     <h4>Fonte dos Dados</h4>
                                     <p class="text-muted" style="font-size: 13px;">Dados carregados dos arquivos CSV disponíveis no GitHub Pages</p>
                                     <div class="mt-3">
-                                        <button class="btn-export w-100" onclick="carregarDadosCSV()">
-                                            <i class="fas fa-sync-alt me-2"></i>Carregar Dados CSV
+                                        <button class="btn-export w-100" onclick="recarregarDadosCSV()">
+                                            <i class="fas fa-sync-alt me-2"></i>Recarregar Dados CSV
                                         </button>
                                     </div>
                                 </div>
@@ -1683,6 +1683,8 @@
                     currentMonth = '11';
                 }
                 
+                // Atualizar meses disponíveis
+                atualizarMesesDisponiveis();
                 // Atualizar dropdowns com os meses disponíveis
                 atualizarDropdownsMeses();
                 
@@ -1710,6 +1712,11 @@
             } finally {
                 showLoading(false);
             }
+        }
+
+        // Função para recarregar dados (sem recursão)
+        function recarregarDadosCSV() {
+            carregarDadosCSV();
         }
 
         // ============================================
@@ -1819,7 +1826,7 @@
             currentYear = '2024';
             currentMonth = '11';
             
-            // Atualizar dropdowns
+            // Atualizar meses disponíveis
             MESES_DISPONIVEIS = [
                 { anoMes: '202411', ano: '2024', mes: '11' },
                 { anoMes: '202410', ano: '2024', mes: '10' },
@@ -2125,11 +2132,6 @@
                 mensagem += 'Os dados são carregados automaticamente ao acessar a página.';
                 alert(mensagem);
             });
-            
-            // Carregar dados CSV
-            window.carregarDadosCSV = function() {
-                carregarDadosCSV();
-            };
             
             // Filtros de ano e mês Dashboard 1
             document.getElementById('anoSelect').addEventListener('change', function() {
@@ -3358,16 +3360,6 @@
             
             console.log(`Meses disponíveis: ${MESES_DISPONIVEIS.length}`);
         }
-
-        // Atualizar meses disponíveis após carregar dados
-        window.carregarDadosCSV = async function() {
-            await carregarDadosCSV();
-            atualizarMesesDisponiveis();
-            atualizarDropdownsMeses();
-        };
-
-        // Inicializar meses disponíveis
-        atualizarMesesDisponiveis();
     </script>
 
 </body>
