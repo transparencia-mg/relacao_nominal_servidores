@@ -13,6 +13,7 @@ Thumbs.db
 
 # Ambiente
 .env
+.venv
 
 # PostgreSQL dumps
 *.sql.dump

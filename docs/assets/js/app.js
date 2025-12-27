@@ -1,31 +1,78 @@
-// ============================================
-// DASHBOARD – DADOS LOCAIS (GitHub Pages)
-// ============================================
+// =====================================================
+// CONFIGURAÇÃO DA API (HOMOLOGAÇÃO)
+// =====================================================
+const API_BASE = 'http://localhost:8000';
 
-async function fetchJSON(path) {
-  const resp = await fetch(path);
+// =====================================================
+// FUNÇÕES AUXILIARES
+// =====================================================
+async function fetchJSON(url) {
+  const resp = await fetch(url);
   if (!resp.ok) {
-    throw new Error(`Erro ao carregar ${path}`);
+    throw new Error(`Erro ao acessar ${url}`);
   }
   return resp.json();
 }
 
-// ============================================
-// VISÃO GERAL
-// ============================================
+function formatarPeriodo(periodo) {
+  // aceita "2025-11" ou "202511"
+  const p = periodo.includes('-')
+    ? periodo.replace('-', '')
+    : periodo;
 
-async function carregarVisaoGeral() {
+  const ano = p.slice(0, 4);
+  const mes = p.slice(4, 6);
+
+  const meses = {
+    "01": "Janeiro", "02": "Fevereiro", "03": "Março",
+    "04": "Abril", "05": "Maio", "06": "Junho",
+    "07": "Julho", "08": "Agosto", "09": "Setembro",
+    "10": "Outubro", "11": "Novembro", "12": "Dezembro"
+  };
+
+  return `${meses[mes]} de ${ano}`;
+}
+
+// =====================================================
+// PERÍODOS
+// =====================================================
+async function carregarPeriodos() {
+  const periodos = await fetchJSON(`${API_BASE}/periodos`);
+  periodos.sort(); // ordem crescente
+  return periodos;
+}
+
+function preencherSelectPeriodos(periodos, periodoAtual) {
+  const select = document.getElementById('periodo');
+  select.innerHTML = '';
+
+  periodos.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p;
+    opt.text = formatarPeriodo(p);
+    if (p === periodoAtual) opt.selected = true;
+    select.appendChild(opt);
+  });
+
+  select.addEventListener('change', e => {
+    carregarDashboard(e.target.value);
+  });
+}
+
+// =====================================================
+// VISÃO GERAL
+// =====================================================
+async function carregarVisaoGeral(periodo) {
   const tbody = document.querySelector('#tabela-visao-geral tbody');
-  if (!tbody) {
-    console.warn('Tabela visão geral não encontrada');
-    return;
-  }
+  if (!tbody) return;
 
   tbody.innerHTML = '';
 
-  const dados = await fetchJSON('data/visao_geral.json');
+  const resp = await fetchJSON(
+    `${API_BASE}/servidores/visao-geral?periodo=${periodo}`
+  );
 
-  dados.forEach(item => {
+  resp.dados.forEach(item => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${item.sigla}</td>
@@ -36,22 +83,20 @@ async function carregarVisaoGeral() {
   });
 }
 
-// ============================================
+// =====================================================
 // DETALHADO
-// ============================================
-
-async function carregarDetalhado() {
+// =====================================================
+async function carregarDetalhado(periodo) {
   const tbody = document.querySelector('#tabela-detalhada tbody');
-  if (!tbody) {
-    console.warn('Tabela detalhada não encontrada');
-    return;
-  }
+  if (!tbody) return;
 
   tbody.innerHTML = '';
 
-  const dados = await fetchJSON('data/detalhado.json');
+  const resp = await fetchJSON(
+    `${API_BASE}/servidores/detalhado?periodo=${periodo}&limit=1000`
+  );
 
-  dados.forEach(r => {
+  resp.dados.forEach(r => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${r.masp || ''}</td>
@@ -65,19 +110,41 @@ async function carregarDetalhado() {
   });
 }
 
-// ============================================
-// INICIALIZAÇÃO
-// ============================================
-
-document.addEventListener('DOMContentLoaded', async () => {
+// =====================================================
+// DASHBOARD
+// =====================================================
+async function carregarDashboard(periodo) {
   try {
-    console.log('🚀 Iniciando dashboard (dados locais)');
-    await carregarVisaoGeral();
-    await carregarDetalhado();
-    console.log('✅ Dashboard carregado com sucesso');
+    document.getElementById('periodo-atual').innerText =
+      formatarPeriodo(periodo);
+
+    await carregarVisaoGeral(periodo);
+    await carregarDetalhado(periodo);
+
+    console.log(`✅ Dashboard carregado para ${periodo}`);
   } catch (e) {
     console.error(e);
-    alert('Erro ao carregar os dados do dashboard');
+    alert('Erro ao carregar dados do período selecionado');
+  }
+}
+
+// =====================================================
+// INICIALIZAÇÃO
+// =====================================================
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    console.log('🚀 Iniciando dashboard (API homologação)');
+
+    const periodos = await carregarPeriodos();
+    const periodoAtual = periodos[periodos.length - 1];
+
+    preencherSelectPeriodos(periodos, periodoAtual);
+    carregarDashboard(periodoAtual);
+
+  } catch (e) {
+    console.error(e);
+    alert('Erro ao inicializar o dashboard');
   }
 });
+
 
